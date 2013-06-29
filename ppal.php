@@ -90,7 +90,9 @@ if ($numberOfRows > 0) {
 		echo "id titular_completa:".$id_conyuge."\n";
 		
 		/* INSERT naf_completo */
-		
+		$ins_naf_completo = " insert into naf () ";
+		$ins_naf_completo .= " values ()";
+				
 /*
 	
 		NumeroDocumento
