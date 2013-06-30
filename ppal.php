@@ -55,59 +55,137 @@ if ($numberOfRows > 0) {
 		$cy_FechaNacimiento = $row['CyFechaNacimiento'];
 		$cy_IdDocumento = $row['tdcy_id'];
 
-//		echo $i." ".$tit_IdDocumento." ".$tit_TipoDocumento." - ".$tit_NumeroDocumento."\n";
-
+		$i++;
+		if ($i > $tope) {
+			//$result->close();
+			break;
+		}
+		echo "row ".$i."\n";
+		
+		$id_titular = -1;
+		$id_conyuge = -1;
+		$id_tit_completa_tit = -1;
+		$id_tit_completa_cy = -1;
+		
 		/* INSERT persona */
+		echo "titular\n";
+		echo " tit_IdDocumento[".$tit_IdDocumento."]\n tit_TipoDocumento[".$tit_TipoDocumento."]\n tit_NumeroDocumento[".$tit_NumeroDocumento."]\n tit_Nombres[".$tit_Nombres."]\n tit_Apellido[".$tit_Apellido."]\n";
 		if ($tit_NumeroDocumento != "") {
 			$ins_titular = " INSERT INTO persona (version, apellido, documento, fecha_nacimiento, nacionalidad, nombre, sexo, tipo_documento_id) ";
 			$ins_titular .= " VALUES ( 0, '".$tit_Apellido."', '".$tit_NumeroDocumento."', '".$tit_FechaNacimiento."', 'Argentina', '".$tit_Nombres."', 'M', ".$tit_IdDocumento.")";
 			echo $ins_titular."\n";
 			if (!$Tconn->query($ins_titular)) {
 				echo "INSERT persona (titular) failed: (" . $Tconn->errno . ") " . $Tconn->error;
-			}    
-			$id_titular = $Tconn->insert_id;
-			echo "id persona:".$id_titular."\n";
+			} else {
+				$id_titular = $Tconn->insert_id;
+				echo " id persona:".$id_titular."\n\n";
+			}
+		} else {
+			//salto a la fila siguiente
+			echo " sin datos del titular, ignoro registro.\n\n";
+			echo "\n\n\n";
+			continue;
+		}
+		if (empty($id_titular)) {
+			$id_titular = "null";
 		}
 
+		echo "conyuge\n";
+		echo " cy_IdDocumento[".$cy_IdDocumento."]\n cy_TipoDocumento[".$cy_TipoDocumento."]\n cy_NumeroDocumento[".$cy_NumeroDocumento."]\n cy_Nombres[".$cy_Nombres."]\n cy_Apellido[".$cy_Apellido."]\n";		
 		if ($cy_NumeroDocumento != "") {
 			$ins_conyuge = " INSERT INTO persona (version, apellido, documento, fecha_nacimiento, nacionalidad, nombre, sexo, tipo_documento_id) ";
 			$ins_conyuge .= " VALUES ( 0, '".$cy_Apellido."', '".$cy_NumeroDocumento."', '".$cy_FechaNacimiento."', 'Argentina', '".$cy_Nombres."', 'F', ".$cy_IdDocumento.")";
 			echo $ins_conyuge."\n";
 			if (!$Tconn->query($ins_conyuge)) {
 				echo "INSERT persona (conyuge) failed: (" . $Tconn->errno . ") " . $Tconn->error;
-			}    
-			$id_conyuge = $Tconn->insert_id;
-			echo "id conyuge:".$id_conyuge."\n";
+			} else {    
+				$id_conyuge = $Tconn->insert_id;
+				echo " id conyuge:".$id_conyuge."\n";
+			}
 			//$ins_result = Tdb_query($ins_conyuge);
 		}
- 		/* INSERT titular_completa */
- 		$ins_tit_completa = " INSERT INTO titular_completa (version, persona_id) ";
-		$ins_tit_completa .= " VALUES ( 0, '".$id_titular."' )";
-		if (!$Tconn->query($ins_tit_completa)) {
-			echo "INSERT titular_completa failed: (" . $Tconn->errno . ") " . $Tconn->error;
-		}    
-		$id_tit_completa = $Tconn->insert_id;
-		echo "id titular_completa:".$id_conyuge."\n";
-		
-		/* INSERT naf_completo */
-		$ins_naf_completo = " insert into naf () ";
-		$ins_naf_completo .= " values ()";
-				
-/*
-	
-		NumeroDocumento
-		FechaNacimiento
-		Apellido
-		Nombres
-		"M"
-		*/
-		$Tconn->commit();
-
-		$i++;
-		if ($i > $tope) {
-			$result->close();
+		if (empty($id_conyuge)) {
+			$id_conyuge = "null";
 		}
+
+ 		/* INSERT titular_completa */
+ 		
+ 		$ins_tit_completa = " INSERT INTO titular_completa (version, persona_id) ";
+		$ins_tit_completa .= " VALUES ( 0, ".$id_titular." )";
+		echo "titular_completa (titular)\n";
+		echo $ins_tit_completa."\n";
+		if (!$Tconn->query($ins_tit_completa)) {
+			echo "INSERT titular_completa (titular) failed: (" . $Tconn->errno . ") " . $Tconn->error;
+		} else {
+			$id_tit_completa_tit = $Tconn->insert_id;
+			echo " id titular_completa (titular):".$id_tit_completa_tit."\n";
+		}
+		if ($cy_NumeroDocumento != "") {
+	 		$ins_tit_completa = " INSERT INTO titular_completa (version, persona_id) ";
+			$ins_tit_completa .= " VALUES ( 0, ".$id_conyuge." )";
+			echo "titular_completa (conyuge)\n";
+			echo $ins_tit_completa."\n";
+			if (!$Tconn->query($ins_tit_completa)) {
+				echo "INSERT titular_completa (conyuge) failed: (" . $Tconn->errno . ") " . $Tconn->error;
+			}  else {
+				$id_tit_completa_cy = $Tconn->insert_id;
+				echo " id titular_completa (conyuge):".$id_tit_completa_cy."\n";
+			}
+		}
+		
+		$Tconn->commit();
+		/* INSERT naf_completo */
+		
+		$ins_naf_completo = " insert into naf_completo (version, titular1_id, titular2_id ) ";
+		if ($cy_NumeroDocumento != "") {
+			$ins_naf_completo .= " values ('0', ".$id_tit_completa_tit.", ".$id_tit_completa_cy.")";
+		} else {
+			$ins_naf_completo .= " values ('0', ".$id_tit_completa_tit.", null)";
+		}
+		echo "naf_completo\n";
+		echo $ins_naf_completo."\n";
+		if (!$Tconn->query($ins_naf_completo)) {
+			echo "INSERT naf_completo failed: (" . $Tconn->errno . ") " . $Tconn->error;
+		} else {    
+			$id_naf_completo = $Tconn->insert_id;
+			echo " id naf_completo:".$id_naf_completo."\n";
+		}
+
+
+
+
+/*		
+, actividad_id
+, centros_salud_id
+, contrata_maquinaria_id
+, distanciaavivienda
+, domicilio_id
+, domicilio_produccion_id
+, escuela_educacion_especial_id
+, escuela_primaria_id
+, escuela_secundaria_id
+, escuela_terciaria_id
+, familia_administra
+, familia_decide_donde_se_vende
+, guarderia_id
+, jardin_de_infantes_id
+, mano_de_obra_id
+, recursos_id
+, tecnologia_id
+, tiene_croquis
+, tierra_id
+, unidad_distanciaavivienda
+, vivienda_detalle_id
+, date_created
+, fecha_creacion
+, last_updated
+, observaciones
+, telefono_contacto
+*/				
 				
+		$Tconn->commit();
+		echo "\n\n\n";
+
 	}
 }
 echo "FIN!"
