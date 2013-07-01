@@ -42,9 +42,9 @@ titulares.TipoDocumento,
 titulares.NumeroDocumento,
 titulares.CuitCuil,
 titulares.FechaNacimiento,
-titulares.NivelEducativo,
+ifnull(titulares.NivelEducativo, 0), NivelEducativo, 
 titulares.ViveEnElPredio,
-titulares.TrabajaEnElPredio,
+ifnull(titulares.TrabajaEnElPredio, 0) TrabajaEnElPredio,
 titulares.parentesco,
 titulares.CyApellido,
 titulares.CyNombres,
@@ -52,9 +52,9 @@ titulares.CyTipoDocumento,
 titulares.CyNumeroDocumento,
 titulares.CyCuitCuil,
 titulares.CyFechaNacimiento,
-titulares.CyNivelEducativo,
+ifnull(titulares.CyNivelEducativo, 0) CyNivelEducativo,
 titulares.CyViveEnElPredio,
-titulares.CyTrabajaEnElPredio,
+ifnull(titulares.CyTrabajaEnElPredio, 0) CyTrabajaEnElPredio,
 titulares.Cyparentesco,
 titulares.ProdVegetal,
 titulares.ProdAnimal,
@@ -485,12 +485,24 @@ tipodoc1.descripcion tdtit_descripcion,
 tipodoc2.id tdcy_id,
 tipodoc2.codigo tdcy_codigo,
 tipodoc2.abrev tdcy_abrev,
-tipodoc2.descripcion tdcy_descripcion
+tipodoc2.descripcion tdcy_descripcion,
+ifnull(parentesco1.id, 0) parentesco1_id,
+ifnull(parentesco2.id, 0) parentesco2_id,
+ifnull(niveled1.id, 0) niveled1_id,
+ifnull(niveled2.id, 0) niveled2_id
 FROM titulares titulares
 left join ".TARGETDB.".tipo_documento tipodoc1
 on ifnull(titulares.TipoDocumento, '-1') = tipodoc1.codigo
 left join ".TARGETDB.".tipo_documento tipodoc2
 on ifnull(titulares.CyTipoDocumento, '-1') = tipodoc2.codigo
+left join ".TARGETDB.".parentesco parentesco1
+on ifnull(titulares.parentesco, '0') = parentesco1.codigo
+left join ".TARGETDB.".parentesco parentesco2
+on ifnull(titulares.Cyparentesco, '0') = parentesco2.codigo
+left join ".TARGETDB.".nivel_educativo niveled1
+on ifnull(titulares.NivelEducativo, '0') = niveled1.codigo
+left join ".TARGETDB.".nivel_educativo niveled2
+on ifnull(titulares.CyNivelEducativo, '0') = niveled2.codigo
 ";
  
 }
