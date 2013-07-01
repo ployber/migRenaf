@@ -26,7 +26,7 @@ $result = $Tconn->query("delete FROM planilla_reducida_action_alertado;");
 $result = $Tconn->query("delete FROM transicionfid_planilla_reducida;");
 $result = $Tconn->query("delete FROM planilla_reducida;");
 $result = $Tconn->query("delete FROM naf_sector;");
-$result = $Tconn->query("delete FROM naf;");
+$result = $Tconn->query("delete FROM naf_completo;");
 $result = $Tconn->query("delete FROM titular;");
 $result = $Tconn->query("delete FROM titular_completa;");
 $result = $Tconn->query("delete FROM persona;");
@@ -35,12 +35,16 @@ $Tconn->commit();
 
 $sel_titulares = select_titulares();
 
-$tope=10;
-$result = $Sconn->query($sel_titulares); 
-$numberOfRows = $Sconn->affected_rows;
-if ($numberOfRows > 0) {
+$TOPEFILASAPROCESAR=10;
+$res_titulares = $Sconn->query($sel_titulares); 
+$nRows_titulares = $Sconn->affected_rows;
+if ($nRows_titulares > 0) {
 	$i=0;
-	while ($row = mysqli_fetch_array($result)) {
+	while ($row = mysqli_fetch_array($res_titulares)) {
+		$k1 = $row['Ventanillaregistro']; 
+		$k2 = $row['pc']; 
+		$k3 = $row['Correlativo']; 
+		
 		$tit_TipoDocumento = $row['TipoDocumento'];
 		$tit_NumeroDocumento = $row['NumeroDocumento'];
 		$tit_Apellido = $row['Apellido'];
@@ -55,12 +59,16 @@ if ($numberOfRows > 0) {
 		$cy_FechaNacimiento = $row['CyFechaNacimiento'];
 		$cy_IdDocumento = $row['tdcy_id'];
 
+		$sel_tierra = "select * from tierra where Ventanillaregistro = ".$k1." and pc = ".$k2." and Correlativo = ".$k3;
+		$res_tierra = $Sconn->query($sel_tierra);
+		$nRows_tierra = $Sconn->affected_rows;		
+		
 		$i++;
-		if ($i > $tope) {
+		if ($i > $TOPEFILASAPROCESAR) {
 			//$result->close();
 			break;
 		}
-		echo "row ".$i."\n";
+		echo "row ".$i." Key:[".$k1."-".$k2."-".$k3."]\n";
 		
 		$id_titular = -1;
 		$id_conyuge = -1;
@@ -133,7 +141,6 @@ if ($numberOfRows > 0) {
 			}
 		}
 		
-		$Tconn->commit();
 		/* INSERT naf_completo */
 		
 		$ins_naf_completo = " insert into naf_completo (version, titular1_id, titular2_id ) ";
@@ -151,6 +158,8 @@ if ($numberOfRows > 0) {
 			echo " id naf_completo:".$id_naf_completo."\n";
 		}
 
+		/* domicilio_id */
+		/* domicilio_produccion_id */
 
 
 
@@ -159,8 +168,6 @@ if ($numberOfRows > 0) {
 , centros_salud_id
 , contrata_maquinaria_id
 , distanciaavivienda
-, domicilio_id
-, domicilio_produccion_id
 , escuela_educacion_especial_id
 , escuela_primaria_id
 , escuela_secundaria_id
