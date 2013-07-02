@@ -56,21 +56,65 @@ if (mysqli_connect_errno($Tconn)) {
 
 $Tconn->autocommit(FALSE);
 
-$result = $Tconn->query("delete FROM auditoria_planilla_reducida;");
-$result = $Tconn->query("delete FROM planilla_reducida_action_alertado;");
-$result = $Tconn->query("delete FROM transicionfid_planilla_reducida;");
-$result = $Tconn->query("delete FROM planilla_reducida;");
-$result = $Tconn->query("delete FROM naf_sector;");
-$result = $Tconn->query("delete FROM naf_completo_integrante;");
-$result = $Tconn->query("delete FROM integrante;");
-$result = $Tconn->query("delete FROM planilla_completa_action_alertado;");
-$result = $Tconn->query("delete FROM transicionpr_planilla_completa;");
-$result = $Tconn->query("delete FROM auditoria_planilla_completa;");
-$result = $Tconn->query("delete FROM planilla_completa;");
-$result = $Tconn->query("delete FROM naf_completo;");
-$result = $Tconn->query("delete FROM titular;");
-$result = $Tconn->query("delete FROM titular_completa;");
-$result = $Tconn->query("delete FROM persona;");
+$listaTablas = Array(
+				"act_agricultura_detalle",   
+				"act_agricultura_act_agricultura_detalle",
+				"act_agroindustria_detalle",
+				"act_agroindustria_act_agroindustria_detalle",
+				"act_apicultura_detalle",   
+				"act_apicultura_act_apicultura_detalle",
+				"act_artesania_detalle",   
+				"act_artesania_act_artesania_detalle",
+				"act_caza_detalle",   
+				"act_caza_act_caza_detalle",
+				"act_pesca_detalle",   
+				"act_pesca_act_pesca_detalle",
+				"act_recoleccion_detalle",   
+				"act_recoleccion_act_recoleccion_detalle",
+				"act_turismo_rural_detalle",   
+				"act_turismo_rural_act_turismo_rural_detalle",
+				"sub_producto_animal",   
+				"act_pastoreo_detalle_sub_producto_animal",
+				"act_pastoreo_detalle",   
+				"act_pastoreo_act_pastoreo_detalle",
+				"actividad_completa_actividad_complementaria",
+				"actividad_complementaria",  
+				"actividad_principal",   
+				"actividad_completa_actividad_principal",
+				"actividad_completa_adicionales",
+				"mejora_produccion",
+				"rec_tractores",
+				"rec_vehiculo",
+				"recursos",
+				"rec_riego",
+				"limite_explotacion_con_limites",
+				"explotacion_con_limites",
+				"limite_explotacion_sin_limites",
+				"explotacion_sin_limites",
+				"distancia_viviendaaeducacion",
+				"salud_detalle",
+				"emergencia",
+				"superficie_completa",
+				"auditoria_planilla_reducida",
+				"planilla_reducida_action_alertado",
+				"transicionfid_planilla_reducida",
+				"planilla_reducida",
+				"naf_sector",
+				"naf_completo_integrante",
+				"integrante",
+				"planilla_completa_action_alertado",
+				"transicionpr_planilla_completa",
+				"auditoria_planilla_completa",
+				"planilla_completa",
+				"naf_completo",
+				"actividad_completa",
+				"titular",
+				"titular_completa",
+				"persona"
+				);
+
+
+vaciar_tablas($Tconn, $listaTablas);
 
 $Tconn->commit();
 
@@ -428,7 +472,6 @@ if ($nRows_titulares > 0) {
 		if ($row_tit['ServAlqTierra']) {
 			$ins_actividad_complementaria = " insert into actividad_complementaria (version, agropecuarios, descripcion) ";
 			$ins_actividad_complementaria .= " values (0, 0, 'ServAlqTierra')";
-			/* FALTA! ingreso_adicional_anual, ingreso_complementario_anual */
 			echoif("actividad_complementaria (alquilaTierra)\n");
 			echoif($ins_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_complementaria)) {
@@ -439,9 +482,11 @@ if ($nRows_titulares > 0) {
 				$id_actividad_complementaria = $Tconn->insert_id;
 				echoif(" id actividad_complementaria:".$id_actividad_complementaria."\n");
 			}
-ServSuperficieAlquilada
-ServSuperficieAlquiladaUnidades
-			$upd_actividad_complementaria = " update into actividad_complementaria set superficie_id =  ";
+			
+			/* superficie */
+			$id_superficie = ins_superficie($Tconn, $row_tit['ServSuperficieAlquilada'], $row_tit['ServSuperficieAlquiladaUnidades']);
+			
+			$upd_actividad_complementaria = " update actividad_complementaria set superficie_id = ".$id_superficie;
 			$upd_actividad_complementaria .= " where id = ".$id_actividad_complementaria;
 			echoif("upd actividad_complementaria (superficie alquilaTierra)\n");
 			echoif($upd_actividad_complementaria."\n");
@@ -461,28 +506,182 @@ ServSuperficieAlquiladaUnidades
 				$Errores['actividad_completa_actividad_complementaria']++;
 				echoif("\n\n");
 			}
-			
 		}		
 				 
-		if ($row_tit['ServVtaFuerzaTrab'])
-		$row_tit['ServVtaFuerzaTrabAgropecuario
+		if ($row_tit['ServVtaFuerzaTrab']) {
+			$ins_actividad_complementaria = " insert into actividad_complementaria (version, agropecuarios, descripcion) ";
+			$ins_actividad_complementaria .= " values (0, ".$row_tit['ServVtaFuerzaTrabAgropecuario'].", 'ServVtaFuerzaTrab')";
+			echoif("actividad_complementaria (ServVtaFuerzaTrab)\n");
+			echoif($ins_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_complementaria (ServVtaFuerzaTrab) failed: ");
+				$Errores['actividad_complementaria']++;
+				echoif("\n\n");
+			} else {    
+				$id_actividad_complementaria = $Tconn->insert_id;
+				echoif(" id actividad_complementaria:".$id_actividad_complementaria."\n");
+			}
+			/* actividad_completa_actividad_complementaria */
+			$ins_actividad_completa_actividad_complementaria = " insert into actividad_completa_actividad_complementaria (actividad_completa_complementarias_id, actividad_complementaria_id) ";
+			$ins_actividad_completa_actividad_complementaria .= " values (".$id_actividad_completa.", ".$id_actividad_complementaria.")";
+			echoif("actividad_completa_actividad_complementaria (ServVtaFuerzaTrab)\n");
+			echoif($ins_actividad_completa_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServVtaFuerzaTrab) failed: ");
+				$Errores['actividad_completa_actividad_complementaria']++;
+				echoif("\n\n");
+			}
+		}
 
-		if ($row_tit['ServVtaFuerzaTrabEv'])
-		$row_tit['ServVtaFuerzaTrabEvAgropecuario
+		if ($row_tit['ServVtaFuerzaTrabEv']) {
+			$ins_actividad_complementaria = " insert into actividad_complementaria (version, agropecuarios, descripcion) ";
+			$ins_actividad_complementaria .= " values (0, ".$row_tit['ServVtaFuerzaTrabEvAgropecuario'].", 'ServVtaFuerzaTrabEv')";
+			echoif("actividad_complementaria (ServVtaFuerzaTrabEv)\n");
+			echoif($ins_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_complementaria (ServVtaFuerzaTrabEv) failed: ");
+				$Errores['actividad_complementaria']++;
+				echoif("\n\n");
+			} else {    
+				$id_actividad_complementaria = $Tconn->insert_id;
+				echoif(" id actividad_complementaria:".$id_actividad_complementaria."\n");
+			}
+			/* actividad_completa_actividad_complementaria */
+			$ins_actividad_completa_actividad_complementaria = " insert into actividad_completa_actividad_complementaria (actividad_completa_complementarias_id, actividad_complementaria_id) ";
+			$ins_actividad_completa_actividad_complementaria .= " values (".$id_actividad_completa.", ".$id_actividad_complementaria.")";
+			echoif("actividad_completa_actividad_complementaria (ServVtaFuerzaTrabEv)\n");
+			echoif($ins_actividad_completa_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServVtaFuerzaTrabEv) failed: ");
+				$Errores['actividad_completa_actividad_complementaria']++;
+				echoif("\n\n");
+			}
+		}
 		
-		if ($row_tit['ServUsoANimales'])
-		$row_tit['ServUsoANimalesAgropecuario
+		if ($row_tit['ServUsoANimales']) {
+			$ins_actividad_complementaria = " insert into actividad_complementaria (version, agropecuarios, descripcion) ";
+			$ins_actividad_complementaria .= " values (0, ".$row_tit['ServUsoANimalesAgropecuario'].", 'ServUsoANimales')";
+			echoif("actividad_complementaria (ServUsoANimales)\n");
+			echoif($ins_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_complementaria (ServUsoANimales) failed: ");
+				$Errores['actividad_complementaria']++;
+				echoif("\n\n");
+			} else {    
+				$id_actividad_complementaria = $Tconn->insert_id;
+				echoif(" id actividad_complementaria:".$id_actividad_complementaria."\n");
+			}
+			/* actividad_completa_actividad_complementaria */
+			$ins_actividad_completa_actividad_complementaria = " insert into actividad_completa_actividad_complementaria (actividad_completa_complementarias_id, actividad_complementaria_id) ";
+			$ins_actividad_completa_actividad_complementaria .= " values (".$id_actividad_completa.", ".$id_actividad_complementaria.")";
+			echoif("actividad_completa_actividad_complementaria (ServUsoANimales)\n");
+			echoif($ins_actividad_completa_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServUsoANimales) failed: ");
+				$Errores['actividad_completa_actividad_complementaria']++;
+				echoif("\n\n");
+			}
+		}
 		
-		if ($row_tit['ServUsoMaquinarias'])
-		$row_tit['ServUsoMaquinariasAgropecuario
+		if ($row_tit['ServUsoMaquinarias']) {
+			$ins_actividad_complementaria = " insert into actividad_complementaria (version, agropecuarios, descripcion) ";
+			$ins_actividad_complementaria .= " values (0, ".$row_tit['ServUsoMaquinariasAgropecuario'].", 'ServUsoMaquinarias')";
+			echoif("actividad_complementaria (ServUsoMaquinarias)\n");
+			echoif($ins_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_complementaria (ServUsoMaquinarias) failed: ");
+				$Errores['actividad_complementaria']++;
+				echoif("\n\n");
+			} else {    
+				$id_actividad_complementaria = $Tconn->insert_id;
+				echoif(" id actividad_complementaria:".$id_actividad_complementaria."\n");
+			}
+			/* actividad_completa_actividad_complementaria */
+			$ins_actividad_completa_actividad_complementaria = " insert into actividad_completa_actividad_complementaria (actividad_completa_complementarias_id, actividad_complementaria_id) ";
+			$ins_actividad_completa_actividad_complementaria .= " values (".$id_actividad_completa.", ".$id_actividad_complementaria.")";
+			echoif("actividad_completa_actividad_complementaria (ServUsoMaquinarias)\n");
+			echoif($ins_actividad_completa_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServUsoMaquinarias) failed: ");
+				$Errores['actividad_completa_actividad_complementaria']++;
+				echoif("\n\n");
+			}
+		}
 		
-		if ($row_tit['ServComercializacion'])
+		if ($row_tit['ServComercializacion']) {
+			$ins_actividad_complementaria = " insert into actividad_complementaria (version, agropecuarios, descripcion) ";
+			$ins_actividad_complementaria .= " values (0, 0, 'ServComercializacion')";
+			echoif("actividad_complementaria (ServComercializacion)\n");
+			echoif($ins_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_complementaria (ServComercializacion) failed: ");
+				$Errores['actividad_complementaria']++;
+				echoif("\n\n");
+			} else {    
+				$id_actividad_complementaria = $Tconn->insert_id;
+				echoif(" id actividad_complementaria:".$id_actividad_complementaria."\n");
+			}
+			/* actividad_completa_actividad_complementaria */
+			$ins_actividad_completa_actividad_complementaria = " insert into actividad_completa_actividad_complementaria (actividad_completa_complementarias_id, actividad_complementaria_id) ";
+			$ins_actividad_completa_actividad_complementaria .= " values (".$id_actividad_completa.", ".$id_actividad_complementaria.")";
+			echoif("actividad_completa_actividad_complementaria (ServComercializacion)\n");
+			echoif($ins_actividad_completa_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServComercializacion) failed: ");
+				$Errores['actividad_completa_actividad_complementaria']++;
+				echoif("\n\n");
+			}
+		}
 		
-		if ($row_tit['ServTransporte'])
+		if ($row_tit['ServTransporte']) {
+			$ins_actividad_complementaria = " insert into actividad_complementaria (version, agropecuarios, descripcion) ";
+			$ins_actividad_complementaria .= " values (0, 0, 'ServTransporte')";
+			echoif("actividad_complementaria (ServTransporte)\n");
+			echoif($ins_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_complementaria (ServTransporte) failed: ");
+				$Errores['actividad_complementaria']++;
+				echoif("\n\n");
+			} else {    
+				$id_actividad_complementaria = $Tconn->insert_id;
+				echoif(" id actividad_complementaria:".$id_actividad_complementaria."\n");
+			}
+			/* actividad_completa_actividad_complementaria */
+			$ins_actividad_completa_actividad_complementaria = " insert into actividad_completa_actividad_complementaria (actividad_completa_complementarias_id, actividad_complementaria_id) ";
+			$ins_actividad_completa_actividad_complementaria .= " values (".$id_actividad_completa.", ".$id_actividad_complementaria.")";
+			echoif("actividad_completa_actividad_complementaria (ServTransporte)\n");
+			echoif($ins_actividad_completa_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServTransporte) failed: ");
+				$Errores['actividad_completa_actividad_complementaria']++;
+				echoif("\n\n");
+			}
+		}
 
-		if ($row_tit['ServTurismo'])
-		
-
+		if ($row_tit['ServTurismo']) {
+			$ins_actividad_complementaria = " insert into actividad_complementaria (version, agropecuarios, descripcion) ";
+			$ins_actividad_complementaria .= " values (0, 0, 'ServTurismo')";
+			echoif("actividad_complementaria (ServTurismo)\n");
+			echoif($ins_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_complementaria (ServTurismo) failed: ");
+				$Errores['actividad_complementaria']++;
+				echoif("\n\n");
+			} else {    
+				$id_actividad_complementaria = $Tconn->insert_id;
+				echoif(" id actividad_complementaria:".$id_actividad_complementaria."\n");
+			}
+			/* actividad_completa_actividad_complementaria */
+			$ins_actividad_completa_actividad_complementaria = " insert into actividad_completa_actividad_complementaria (actividad_completa_complementarias_id, actividad_complementaria_id) ";
+			$ins_actividad_completa_actividad_complementaria .= " values (".$id_actividad_completa.", ".$id_actividad_complementaria.")";
+			echoif("actividad_completa_actividad_complementaria (ServTurismo)\n");
+			echoif($ins_actividad_completa_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServTurismo) failed: ");
+				$Errores['actividad_completa_actividad_complementaria']++;
+				echoif("\n\n");
+			}
+		}
 
 		
 		/* Actualizo naf_completo */
@@ -535,8 +734,8 @@ echo "FIN!\n";
 print_r($Errores);
 
 function echoif($str) {
-if (! DEBUG) {
-	echo $str;
+	if (! DEBUG) {
+		echo $str;
 	};
 }
 function pdberror($conn, $str) {
@@ -545,5 +744,36 @@ function pdberror($conn, $str) {
 	echoif($str." (" . mysqli_errno($conn) . ") " . mysqli_error($conn)."\n");
 	echoif("=====================================================================\n\n");
 	}
+function ins_superficie ($conn, $medida, $unidad_id) {
+	$id_superficie_completa = -1;
+	$ins_superficie_completa = " insert into superficie_completa (version, medida, unidad_id) ";
+	$ins_superficie_completa .= " values (0, ".$medida.", ".$unidad_id." )";
+	echoif("superficie_completa\n");
+	echoif($ins_superficie_completa."\n");
+	if (!$conn->query($ins_superficie_completa)) {
+		pdberror($conn, "INSERT superficie_completa failed: ");
+		$Errores['superficie_completa']++;
+		echoif("\n\n");
+	} else {    
+		$id_superficie_completa = $conn->insert_id;
+		echoif(" id superficie_completa:".$id_superficie_completa."\n");
+	}
+	return $id_superficie_completa;
+}
+
+function vaciar_tablas($conn, $listaTablas) {
+	echoif("borrando tablas...\n");
+	foreach ($listaTablas as $tabla) {
+		$del_query = "delete FROM ".$tabla.";"; 
+		echoif($del_query."\n");
+		if (!$conn->query($del_query)) {
+			pdberror($conn, $del_query." failed: ");
+			echoif("\n\n");
+		} else {
+			echoif("Se borro ok ".$tabla."\n\n");
+		}
+	}
+	return;
+}
 
 ?>
