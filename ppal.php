@@ -79,7 +79,33 @@ $Errores = Array(
 	"titular_completa"=>0,
 	"integrante"=>0,
 	"naf_completo"=>0,
-	"domicilio"=>0
+	"domicilio"=>0,
+	"naf_completo_integrante"=>0,
+	"actividad_completa"=>0,
+	"actividad_complementaria"=>0,
+	"actividad_completa_actividad_complementaria"=>0,
+	"actividad_principal"=>0,
+	"actividad_completa_actividad_principal"=>0,
+	"act_agricultura_detalle"=>0,
+	"act_agricultura_act_agricultura_detalle"=>0,
+	"act_agroindustria_detalle"=>0,
+	"act_agroindustria_act_agroindustria_detalle"=>0,
+	"act_apicultura_detalle"=>0,
+	"act_apicultura_act_apicultura_detalle"=>0,
+	"act_artesania_detalle"=>0,
+	"act_artesania_act_artesania_detalle"=>0,
+	"act_caza_detalle"=>0,
+	"act_caza_act_caza_detalle"=>0,
+	"act_pesca_detalle"=>0,
+	"act_pesca_act_pesca_detalle"=>0,
+	"act_recoleccion_detalle"=>0,
+	"act_recoleccion_act_recoleccion_detalle"=>0,
+	"act_turismo_rural_detalle"=>0,
+	"act_turismo_rural_act_turismo_rural_detalle"=>0,
+	"act_pastoreo_detalle"=>0,
+	"act_pastoreo_act_pastoreo_detalle"=>0,
+	"sub_producto_animal"=>0,
+	"act_pastoreo_detalle_sub_producto_animal"=>0
 );
 
 $sel_titulares = select_titulares();
@@ -219,7 +245,7 @@ if ($nRows_titulares > 0) {
 			$ins_integrante .= " VALUES ( 0, ".trim($row_tit['niveled2_id']).", ".trim($row_tit['parentesco2_id']).", ".trim($row_tit['parentesco1_id']).", ".$id_conyuge.", b'".$row_tit['CyTrabajaEnElPredio']."')";
 			echoif($ins_integrante."\n");
 			if (!$Tconn->query($ins_integrante)) {
-				pdberror($Tconn, "INSERT integrante (titular) failed: ");
+				pdberror($Tconn, "INSERT integrante (conyuge) failed: ");
 				$Errores['integrante']++;
 				echoif("\n\n");
 			} else {
@@ -280,8 +306,20 @@ if ($nRows_titulares > 0) {
 			echoif(" id naf_completo:".$id_naf_completo."\n");
 		}
 
-		
-
+		/* naf_completo_integrante */
+		$ins_naf_completo_integrante = " insert into naf_completo_integrante (naf_completo_integrantes_id, integrante_id) ";
+		if (!$SINCONYUGE) {
+			$ins_naf_completo_integrante .= " values (".$id_naf_completo.", ".$id_integrante_tit."), (".$id_naf_completo.", ".$id_integrante_cy.")";
+		} else {
+			$ins_naf_completo_integrante .= " values (".$id_naf_completo.", ".$id_integrante_tit.")";
+		}
+		echoif("naf_completo_integrante\n");
+		echoif($ins_naf_completo_integrante."\n");
+		if (!$Tconn->query($ins_naf_completo_integrante)) {
+			pdberror($Tconn, "INSERT naf_completo_integrante failed: ");
+			$Errores['naf_completo_integrante']++;
+			echoif("\n\n");
+		}		
 
 		/* domicilio_id */
 		
@@ -338,22 +376,135 @@ if ($nRows_titulares > 0) {
 			echoif(" id domicilio Produccion:".$id_domicilio_prod."\n");
 		}
 				
-		$upd_nafcompleto = " update naf_completo set domicilio_id = ".$id_domicilio.", domicilio_produccion_id=".$id_domicilio_prod;
+		/* ACTIVIDADES */
+		/* naf_completo 
+		 * 	has 1
+		 * 		actividad_completa 
+		 * 		has many
+		 * 			actividad_complementaria   rel   actividad_completa_actividad_complementaria
+		 * 			actividad_principal   rel   actividad_completa_actividad_principal
+		 * 			has many
+		 * 				act_agricultura_detalle   rel   act_agricultura_act_agricultura_detalle
+		 * 				act_agroindustria_detalle   rel   act_agroindustria_act_agroindustria_detalle
+		 * 				act_apicultura_detalle   rel   act_apicultura_act_apicultura_detalle
+		 * 				act_artesania_detalle   rel   act_artesania_act_artesania_detalle
+		 * 				act_caza_detalle   rel   act_caza_act_caza_detalle
+		 * 				act_pesca_detalle   rel   act_pesca_act_pesca_detalle
+		 * 				act_recoleccion_detalle   rel   act_recoleccion_act_recoleccion_detalle
+		 * 				act_turismo_rural_detalle   rel   act_turismo_rural_act_turismo_rural_detalle
+		 * 				act_pastoreo_detalle   rel   act_pastoreo_act_pastoreo_detalle
+		 * 				has many
+		 * 					sub_producto_animal   rel   act_pastoreo_detalle_sub_producto_animal
+		 * act_produccion ?
+		 *
+		 */ 
+
+		/* actividad_completa */
+		$ins_actividad_completa = " insert into actividad_completa (version, ingreso_adicional_anual, ingreso_complementario_anual) ";
+		$ins_actividad_completa .= " values (0, 0, 0)";
+		/* FALTA! ingreso_adicional_anual, ingreso_complementario_anual */
+		echoif("actividad_completa\n");
+		echoif($ins_actividad_completa."\n");
+		if (!$Tconn->query($ins_actividad_completa)) {
+			pdberror($Tconn, "INSERT actividad_completa failed: ");
+			$Errores['actividad_completa']++;
+			echoif("\n\n");
+		} else {    
+			$id_actividad_completa = $Tconn->insert_id;
+			echoif(" id actividad_completa:".$id_actividad_completa."\n");
+		}		
+		 
+		/* actividad_complementaria */
+		/* -literales- 
+		 * alquilaTierra
+		 * trabajosFijos
+		 * trabajosEventuales
+		 * serviciosAnimales
+		 * serviciosMaquinas
+		 * vendeProductosOtros
+		 * transporteProductosOtros
+		 * transportaPersonas
+		 */
+		if ($row_tit['ServAlqTierra']) {
+			$ins_actividad_complementaria = " insert into actividad_complementaria (version, agropecuarios, descripcion) ";
+			$ins_actividad_complementaria .= " values (0, 0, 'ServAlqTierra')";
+			/* FALTA! ingreso_adicional_anual, ingreso_complementario_anual */
+			echoif("actividad_complementaria (alquilaTierra)\n");
+			echoif($ins_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_complementaria (alquilaTierra) failed: ");
+				$Errores['actividad_complementaria']++;
+				echoif("\n\n");
+			} else {    
+				$id_actividad_complementaria = $Tconn->insert_id;
+				echoif(" id actividad_complementaria:".$id_actividad_complementaria."\n");
+			}
+ServSuperficieAlquilada
+ServSuperficieAlquiladaUnidades
+			$upd_actividad_complementaria = " update into actividad_complementaria set superficie_id =  ";
+			$upd_actividad_complementaria .= " where id = ".$id_actividad_complementaria;
+			echoif("upd actividad_complementaria (superficie alquilaTierra)\n");
+			echoif($upd_actividad_complementaria."\n");
+			if (!$Tconn->query($upd_actividad_complementaria)) {
+				pdberror($Tconn, "UPDATE actividad_complementaria (superficie alquilaTierra) failed: ");
+				$Errores['actividad_complementaria']++;
+				echoif("\n\n");
+			}
+
+			/* actividad_completa_actividad_complementaria */
+			$ins_actividad_completa_actividad_complementaria = " insert into actividad_completa_actividad_complementaria (actividad_completa_complementarias_id, actividad_complementaria_id) ";
+			$ins_actividad_completa_actividad_complementaria .= " values (".$id_actividad_completa.", ".$id_actividad_complementaria.")";
+			echoif("actividad_completa_actividad_complementaria (alquilaTierra)\n");
+			echoif($ins_actividad_completa_actividad_complementaria."\n");
+			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
+				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (alquilaTierra) failed: ");
+				$Errores['actividad_completa_actividad_complementaria']++;
+				echoif("\n\n");
+			}
+			
+		}		
+				 
+		if ($row_tit['ServVtaFuerzaTrab'])
+		$row_tit['ServVtaFuerzaTrabAgropecuario
+
+		if ($row_tit['ServVtaFuerzaTrabEv'])
+		$row_tit['ServVtaFuerzaTrabEvAgropecuario
+		
+		if ($row_tit['ServUsoANimales'])
+		$row_tit['ServUsoANimalesAgropecuario
+		
+		if ($row_tit['ServUsoMaquinarias'])
+		$row_tit['ServUsoMaquinariasAgropecuario
+		
+		if ($row_tit['ServComercializacion'])
+		
+		if ($row_tit['ServTransporte'])
+
+		if ($row_tit['ServTurismo'])
+		
+
+
+		
+		/* Actualizo naf_completo */
+		$upd_nafcompleto = " update naf_completo ";
+		$upd_nafcompleto .= " set domicilio_id = ".$id_domicilio;
+		$upd_nafcompleto .= " , actividad_id = ".$id_actividad_completa;
+		$upd_nafcompleto .= " , domicilio_produccion_id = ".$id_domicilio_prod;
+		$upd_nafcompleto .= " , distanciaavivienda = ".$row_tierra['DistanciaAlPredio'];
+		$upd_nafcompleto .= " , unidad_distanciaavivienda = '".$row_tierra['DistanciaAlPredioUnidad']."'";
 		$upd_nafcompleto .= " where id = ".$id_naf_completo;
+		
 		if (!$Tconn->query($upd_nafcompleto)) {
 			pdberror($Tconn, "UPDATE naf_completo (domicilios) failed: ");
 			$Errores['naf_completo']++;
 			echoif("\n\n");
 		}		
-				
 
 
 
 /*		
-, actividad_id
 , centros_salud_id
 , contrata_maquinaria_id
-, distanciaavivienda
 , escuela_educacion_especial_id
 , escuela_primaria_id
 , escuela_secundaria_id
@@ -367,7 +518,6 @@ if ($nRows_titulares > 0) {
 , tecnologia_id
 , tiene_croquis
 , tierra_id
-, unidad_distanciaavivienda
 , vivienda_detalle_id
 , date_created
 , fecha_creacion

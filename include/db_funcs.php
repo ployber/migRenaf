@@ -9,7 +9,8 @@ function db_query($db_conn, $query) {
 	return $result;
 }
 
-function mostrarVariablesArray($arr) {
+function mostrarVariablesArray($arr) {echo $argc;
+	
 	echo '<table border="4"><tr><td>';
 	echo '<br>';
 	$arVal = array();
