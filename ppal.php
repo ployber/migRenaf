@@ -38,21 +38,21 @@ $Errores = Array(
 );
 
 $listaTablas = Array(
-				"act_agricultura_detalle",   
 				"act_agricultura_act_agricultura_detalle",
-				"act_agroindustria_detalle",
+				"act_agricultura_detalle",   
 				"act_agroindustria_act_agroindustria_detalle",
+				"act_agroindustria_detalle",
 				"act_apicultura_detalle",   
-				"act_apicultura_act_apicultura_detalle",
 				"act_artesania_detalle",   
+				"act_apicultura_act_apicultura_detalle",
 				"act_artesania_act_artesania_detalle",
-				"act_caza_detalle",   
 				"act_caza_act_caza_detalle",
-				"act_pesca_detalle",   
+				"act_caza_detalle",   
 				"act_pesca_act_pesca_detalle",
+				"act_pesca_detalle",   
 				"act_recoleccion_detalle",   
-				"act_recoleccion_act_recoleccion_detalle",
 				"act_turismo_rural_detalle",   
+				"act_recoleccion_act_recoleccion_detalle",
 				"act_turismo_rural_act_turismo_rural_detalle",
 				"sub_producto_animal",   
 				"act_pastoreo_detalle_sub_producto_animal",
@@ -60,8 +60,8 @@ $listaTablas = Array(
 				"act_pastoreo_act_pastoreo_detalle",
 				"actividad_completa_actividad_complementaria",
 				"actividad_complementaria",  
-				"actividad_principal",   
 				"actividad_completa_actividad_principal",
+				"actividad_principal",   
 				"actividad_completa_adicionales",
 				"mejora_produccion",
 				"rec_tractores",
@@ -192,7 +192,15 @@ if ($nRows_titulares > 0) {
 
 		$sel_tierra = "select * from tierra where Ventanillaregistro = ".$k1." and pc = ".$k2." and Correlativo = ".$k3;
 		$res_tierra = $Sconn->query($sel_tierra);
-		$nRows_tierra = $Sconn->affected_rows;
+		if ($Sconn->errno) {
+			$nRows_tierra = 0;
+			$errors[] = $Sconn->error;
+		    printf("error : %s\n", $Sconn->errno);
+			echo $sel_tierra."\n";
+			print_r($errors);
+		} else { 
+			$nRows_tierra = $Sconn->affected_rows;
+		}
 		if ($nRows_tierra > 0) {
 			$row_tierra = mysqli_fetch_array($res_tierra);		
 		} else {
@@ -200,15 +208,70 @@ if ($nRows_titulares > 0) {
 		}
 		echoif("Obtenido registro tierra ".$nRows_tierra."\n\n");
 				
-		$sel_pv = "select * from prodvegetal where VentanillaRegistro = ".$k1." and pc = ".$k2." and CorrelativoTitular = ".$k3;
+		$sel_pv = select_prodvegetal($k1, $k2, $k3); 
 		$res_pv = $Sconn->query($sel_pv);
-		$nRows_pv = $Sconn->affected_rows;
-		if ($nRows_pv > 0) {
-			$row_pv = mysqli_fetch_array($res_pv);		
-		} else {
-			$row_pv = array();
-		}		
-		echoif("Obtenido registro prodvegetal ".$nRows_tierra."\n\n");
+		if ($Sconn->errno) {
+			$nRows_pv = 0;
+			$errors[] = $Sconn->error;
+		    printf("error : %s\n", $Sconn->errno);
+			echo $sel_pv."\n";
+			print_r($errors);
+		} else { 
+			$nRows_pv = $Sconn->affected_rows;
+			echoif("Obtenidos registros prodvegetal ".$nRows_pv."\n");
+		}
+
+		$sel_pa = select_prodanimal($k1, $k2, $k3);
+		$res_pa = $Sconn->query($sel_pa);
+		if ($Sconn->errno) {
+			$nRows_pa = 0;
+			$errors[] = $Sconn->error;
+		    printf("error : %s\n", $Sconn->errno);
+			echo $sel_pa."\n";
+		    print_r($errors);
+		} else { 
+			$nRows_pa = $Sconn->affected_rows;
+			echoif("Obtenidos registros prodanimal ".$nRows_pa."\n");
+		}
+
+		$sel_ar = select_artesanias($k1, $k2, $k3);
+		$res_ar = $Sconn->query($sel_ar);
+		if ($Sconn->errno) {
+			$nRows_ar = 0;
+			$errors[] = $Sconn->error;
+		    printf("error : %s\n", $Sconn->errno);
+			echo $sel_ar."\n";
+			print_r($errors);
+		} else { 
+			$nRows_ar = $Sconn->affected_rows;
+			echoif("Obtenidos registros artesanias ".$nRows_ar."\n");
+		}
+
+		$sel_in = select_infraestructura($k1, $k2, $k3);
+		$res_in = $Sconn->query($sel_in);
+		if ($Sconn->errno) {
+			$nRows_in = 0;
+			$errors[] = $Sconn->error;
+		    printf("error : %s\n", $Sconn->errno);
+			echo $sel_in."\n";
+			print_r($errors);
+		} else { 
+			$nRows_in = $Sconn->affected_rows;
+			echoif("Obtenidos registros infraestructura ".$nRows_in."\n");
+		}
+			
+		$sel_ai = select_agroindustria($k1, $k2, $k3); 
+		$res_ai = $Sconn->query($sel_ai);
+		if ($Sconn->errno) {
+			$nRows_ai = 0;
+			$errors[] = $Sconn->error;
+		    printf("error : %s\n", $Sconn->errno);
+			echo $sel_ai."\n";
+			print_r($errors);
+		} else { 
+			$nRows_ai = $Sconn->affected_rows;
+			echoif("Obtenidos registros agroindustria ".$nRows_ai."\n\n");
+		}
 
 		$i++;
 		if ($i > $TOPEFILASAPROCESAR) {
@@ -444,7 +507,9 @@ if ($nRows_titulares > 0) {
 			echoif(" id domicilio Produccion:".$id_domicilio_prod."\n");
 		}
 				
-		/* ACTIVIDADES */
+		  /***************/
+		 /* ACTIVIDADES */
+		/***************/
 		/* naf_completo 
 		 * 	has 1
 		 * 		actividad_completa 
@@ -481,8 +546,10 @@ if ($nRows_titulares > 0) {
 			$id_actividad_completa = $Tconn->insert_id;
 			echoif(" id actividad_completa:".$id_actividad_completa."\n");
 		}		
-		 
-		/* ACTIVIDADES COMPLEMENTARIAS */
+
+		  /*******************************/		 
+		 /* ACTIVIDADES COMPLEMENTARIAS */
+		/*******************************/
 		/* actividad_complementaria */
 				/* -literales- 
 		 * alquilaTierra
@@ -708,9 +775,13 @@ if ($nRows_titulares > 0) {
 			}
 		}
 
-		/* ACTIVIDADES PRINCIPALES */
-		
+		  /* * * * * * * * * * * * * * * * * * * * * * * * * * */
+		 /*  A C T I V I D A D E S     P R I N C I P A L E S  */
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * */
+		/****************************************************************************************************/		
 		/* actividad_principal ACT_PRINCIPAL_AGRICULTURA = 'actPrincipalAgricultura', 'renaf.ActAgricultura */
+		/****************************************************************************************************/
+		if ($row_tit['ProdVegetal']) {
 			$ins_actividad_principal = " insert into actividad_principal (version, descripcion, class, cantidad_colmenas_propias, cantidad_colmenas_terceros, certificacion_organica, produccion_organica) ";
 			$ins_actividad_principal .= " values (0, 'actPrincipalAgricultura', 'renaf.ActAgricultura', null, null, ".$row_tit['ProdVegetalOrganicaCertificada'].", ".$row_tit['ProdVegetalOrganica'].")";
 			echoif("actividad_principal actPrincipalAgricultura\n");
@@ -733,8 +804,56 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
-		
+
+			if ($nRows_pv > 0) {
+				$pv=0;
+				while ($row_pv = mysqli_fetch_array($res_pv)) {
+					$pv++;
+					
+					/* act_produccion */
+					$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+					$ins_act_produccion .= " values (0, '".trim($row_pv['can_cod'])."', ".$row_pv['PVAutoconsumo'].", ".$row_pv['PVMercado'].", ".$row_pv['PVIntercambio'].", ".$row_pv['PVPrecioUnitario'].", ".$row_pv['PVVolumen'].", ".$row_pv['PVUnidad'].", ".$row_pv['exp_cod']." )";
+					echoif("act_produccion\n");
+					echoif($ins_act_produccion."\n");
+					if (!$Tconn->query($ins_act_produccion)) {
+						pdberror($Tconn, "INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
+					} else {    
+						$id_act_produccion = $Tconn->insert_id;
+						echoif(" id act_produccion :".$id_act_produccion."\n");
+					}
+					/* superficie_completa */
+					$id_superficie = ins_superficie($Tconn, $row_pv['PVACampo'], $row_pv['PVUn']);
+					/* act_agricultura_detalle */
+					$ins_act_agricultura_detalle = " insert into act_agricultura_detalle (version, bajo_cubierta, codigo, descripcion, produccion_id, superficie_id) ";
+					$ins_act_agricultura_detalle .= " values (0, ".$row_pv['PVCubierta'].", ".$row_pv['act_cod'].", '".$row_pv['act_desc']."', ".$id_act_produccion.", ".$id_superficie.")";
+					echoif("act_agricultura_detalle\n");
+					echoif($ins_act_agricultura_detalle."\n");
+					if (!$Tconn->query($ins_act_agricultura_detalle)) {
+						pdberror($Tconn, "INSERT act_agricultura_detalle failed: ");
+						$Errores['act_agricultura_detalle']++;
+						echoif("\n\n");
+					} else {    
+						$id_act_agricultura_detalle = $Tconn->insert_id;
+						echoif(" id act_agricultura_detalle :".$id_act_agricultura_detalle."\n");
+					}
+					/* act_agricultura_act_agricultura_detalle */
+					$ins_act_agricultura_act_agricultura_detalle = " insert into act_agricultura_act_agricultura_detalle (act_agricultura_detalles_id, act_agricultura_detalle_id) ";
+					$ins_act_agricultura_act_agricultura_detalle .= " values (".$id_actividad_principal.", ".$id_act_agricultura_detalle." )";
+					echoif("act_agricultura_act_agricultura_detalle\n");
+					echoif($ins_act_agricultura_act_agricultura_detalle."\n");
+					if (!$Tconn->query($ins_act_agricultura_act_agricultura_detalle)) {
+						pdberror($Tconn, "INSERT act_agricultura_act_agricultura_detalle failed: ");
+						$Errores['act_agricultura_act_agricultura_detalle']++;
+						echoif("\n\n");
+					}
+				}
+			}
+		}
+
+		/***********************************************************************************************************/
 		/* actividad_principal ACT_PRINCIPAL_AGROINDUSTRIA = 'actPrincipalAgroindustria', 'renaf.ActAgroindustria' */
+		/***********************************************************************************************************/
+		if ($row_tit['ProdAgroindustria']) {
 			$ins_actividad_principal = " insert into actividad_principal (version, descripcion, class, cantidad_colmenas_propias, cantidad_colmenas_terceros, certificacion_organica, produccion_organica) ";
 			$ins_actividad_principal .= " values (0, 'actPrincipalAgroindustria', 'renaf.ActAgroindustria', null, null, ".$row_tit['ProdAgrindustriaOrganicaCertificada'].", ".$row_tit['ProdAgrindustriaOrganica'].")";
 			echoif("actividad_principal actPrincipalAgroindustria\n");
@@ -757,8 +876,53 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
-		
+			/* FALTA!				act_agroindustria_detalle   rel   act_agroindustria_act_agroindustria_detalle */
+			if ($nRows_ai > 0) {
+				$ai=0;
+				while ($row_ai = mysqli_fetch_array($res_ai)) {
+					$ai++;
+					
+					/* act_produccion */
+					$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+					$ins_act_produccion .= " values (0, '".trim($row_ai['can_cod'])."', ".$row_ai['AgroindustriaAutoconsumo'].", ".$row_ai['AgroindustriaMercado'].", ".$row_ai['AgroindustriaIntercambio'].", ".$row_ai['AgroindustriaPrecio'].", ".$row_ai['AgroindustriaVolumen'].", ".$row_pv['AgroindustriaUnidad'].", ".$row_pv['exp_cod']." )";
+					echoif("act_produccion\n");
+					echoif($ins_act_produccion."\n");
+					if (!$Tconn->query($ins_act_produccion)) {
+						pdberror($Tconn, "INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
+					} else {    
+						$id_act_produccion = $Tconn->insert_id;
+						echoif(" id act_produccion :".$id_act_produccion."\n");
+					}
+					/* act_agricultura_detalle */
+					$ins_act_agroindustria_detalle = " insert into act_agroindustria_detalle (version, codigo, descripcion, produccion_id, produce_materia_prima) ";
+					$ins_act_agroindustria_detalle .= " values (0, '".$row_ai['act_cod']."', '".$row_ai['act_desc']."', ".$id_act_produccion.", ".$row_ai['AgroindustriaProduceMP'].")";
+					echoif("act_agroindustria_detalle\n");
+					echoif($ins_act_agroindustria_dact_agricultura_detalle_idetalle."\n");
+					if (!$Tconn->query($ins_act_agroindustria_detalle)) {
+						pdberror($Tconn, "INSERT act_agroindustria_detalle failed: ");
+						$Errores['act_agroindustria_detalle']++;
+						echoif("\n\n");
+					} else {    
+						$id_act_agroindustria_detalle = $Tconn->insert_id;
+						echoif(" id act_agroindustria_detalle :".$id_act_agroindustria_detalle."\n");
+					}
+					/* act_agroindustria_act_agroindustria_detalle */
+					$ins_act_agroindustria_act_agroindustria_detalle = " insert into act_agroindustria_act_agroindustria_detalle (act_agroindustria_detalles_id, act_agroindustria_detalle_id) ";
+					$ins_act_agroindustria_act_agroindustria_detalle .= " values (".$id_actividad_principal.", ".$id_act_agroindustria_detalle." )";
+					echoif("act_agroindustria_act_agroindustria_detalle\n");
+					echoif($ins_act_agroindustria_act_agroindustria_detalle."\n");
+					if (!$Tconn->query($ins_act_agroindustria_act_agroindustria_detalle)) {
+						pdberror($Tconn, "INSERT act_agroindustria_act_agroindustria_detalle failed: ");
+						$Errores['act_agroindustria_act_agroindustria_detalle']++;
+						echoif("\n\n");
+					}
+				}
+			}
+						
+		}			
+
 		/* actividad_principal ACT_PRINCIPAL_APICULTURA = 'actPrincipalApicultura', 'renaf.ActApicultura' */
+		if ($row_tit['PAApiculturaColmenasPropias'] + $row_tit['PAApiculturaColmenasTerceros'] > 0) {					
 			$ins_actividad_principal = " insert into actividad_principal (version, descripcion, class, cantidad_colmenas_propias, cantidad_colmenas_terceros, certificacion_organica, produccion_organica) ";
 			$ins_actividad_principal .= " values (0, 'actPrincipalApicultura', 'renaf.ActApicultura', ".$row_tit['PAApiculturaColmenasPropias'].", ".$row_tit['PAApiculturaColmenasTerceros'].", 0, 0)";
 			echoif("actividad_principal actPrincipalApicultura\n");
@@ -781,8 +945,11 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
+			/* FALTA!				act_apicultura_detalle   rel   act_apicultura_act_apicultura_detalle */
+		}
 
 		/* actividad_principal ACT_PRINCIPAL_ARTESANIA = 'actPrincipalArtesania', 'renaf.ActArtesania' */
+		if ($row_tit['ProdArtesania']) {
 			$ins_actividad_principal = " insert into actividad_principal (version, descripcion, class, cantidad_colmenas_propias, cantidad_colmenas_terceros, certificacion_organica, produccion_organica) ";
 			$ins_actividad_principal .= " values (0, 'actPrincipalArtesania', 'renaf.ActArtesania', null, null, 0, 0)";
 			echoif("actividad_principal actPrincipalArtesania\n");
@@ -805,8 +972,11 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
+			/* FALTA!				act_artesania_detalle   rel   act_artesania_act_artesania_detalle */
+		}
 
 		/* actividad_principal ACT_PRINCIPAL_CAZA = 'actPrincipalCaza', 'renaf.ActCaza' */
+		if ($row_tit['ProdCaza']) {
 			$ins_actividad_principal = " insert into actividad_principal (version, descripcion, class, cantidad_colmenas_propias, cantidad_colmenas_terceros, certificacion_organica, produccion_organica) ";
 			$ins_actividad_principal .= " values (0, 'actPrincipalCaza', 'renaf.ActCaza', null, null, 0, 0)";
 			echoif("actividad_principal actPrincipalCaza\n");
@@ -829,8 +999,11 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
+			/* FALTA!				act_caza_detalle   rel   act_caza_act_caza_detalle */
+		}
 
 		/* actividad_principal ACT_PRINCIPAL_PESCA = 'actPrincipalPesca', 'renaf.ActPesca' */
+		if ($row_tit['ProdPesca']) {
 			$ins_actividad_principal = " insert into actividad_principal (version, descripcion, class, cantidad_colmenas_propias, cantidad_colmenas_terceros, certificacion_organica, produccion_organica) ";
 			$ins_actividad_principal .= " values (0, 'actPrincipalPesca', 'renaf.ActPesca', null, null, 0, 0)";
 			echoif("actividad_principal actPrincipalPesca\n");
@@ -853,8 +1026,11 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
+			/* FALTA!				act_pesca_detalle   rel   act_pesca_act_pesca_detalle */
+		}
 
 		/* actividad_principal ACT_PRINCIPAL_RECOLECCION = 'actPrincipalRecoleccion', 'renaf.ActRecoleccion' */
+		if ($row_tit['ProdRecoleccion']) {
 			$ins_actividad_principal = " insert into actividad_principal (version, descripcion, class, cantidad_colmenas_propias, cantidad_colmenas_terceros, certificacion_organica, produccion_organica) ";
 			$ins_actividad_principal .= " values (0, 'actPrincipalRecoleccion', 'renaf.ActRecoleccion', null, null, 0, 0)";
 			echoif("actividad_principal actPrincipalRecoleccion\n");
@@ -877,7 +1053,11 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
+			/* FALTA!				act_recoleccion_detalle   rel   act_recoleccion_act_recoleccion_detalle */
+		}
+
 		/* actividad_principal ACT_PRINCIPAL_TURISMO_RURAL = 'actPrincipalTurismoRural', 'renaf.ActTurismoRural' */
+		if ($row_tit['ProdTirismoRural']) {
 			$ins_actividad_principal = " insert into actividad_principal (version, descripcion, class, cantidad_colmenas_propias, cantidad_colmenas_terceros, certificacion_organica, produccion_organica) ";
 			$ins_actividad_principal .= " values (0, 'actPrincipalTurismoRural', 'renaf.ActTurismoRural', null, null, 0, 0)";
 			echoif("actividad_principal actPrincipalTurismoRural\n");
@@ -900,7 +1080,11 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
+			/* FALTA!				act_turismo_rural_detalle   rel   act_turismo_rural_act_turismo_rural_detalle */
+		}
+
 		/* actividad_principal ACT_PRINCIPAL_PASTOREO = 'actPrincipalPastoreo', 'renaf.ActPastoreo' */
+		if ($row_tit['ProdAnimal']) {
 			$ins_actividad_principal = " insert into actividad_principal (version, descripcion, class, cantidad_colmenas_propias, cantidad_colmenas_terceros, certificacion_organica, produccion_organica) ";
 			$ins_actividad_principal .= " values (0, 'actPrincipalPastoreo', 'renaf.ActPastoreo', null, null, ".$row_tit['ProdAnimalOrganicaCertificada'].", ".$row_tit['ProdAnimalOrganica'].")";
 			echoif("actividad_principal actPrincipalPastoreo\n");
@@ -923,6 +1107,10 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
+			/* FALTA!		act_pastoreo_detalle   rel   act_pastoreo_act_pastoreo_detalle
+			 * 					sub_producto_animal   rel   act_pastoreo_detalle_sub_producto_animal
+			 */
+		}	
 		
 		/* TODAS */
 		/* 7   actividad_principal ACT_PRINCIPAL_AGRICULTURA = 'actPrincipalAgricultura', 'renaf.ActAgricultura */
@@ -949,9 +1137,6 @@ if ($nRows_titulares > 0) {
 		 * 				has many
 		 * 					sub_producto_animal   rel   act_pastoreo_detalle_sub_producto_animal
 		 */
-//PAApiculturaColmenasPropias
-//PAApiculturaColmenasTerceros
-		
 		
 		/* Actualizo naf_completo */
 		$upd_nafcompleto = " update naf_completo ";
@@ -1009,7 +1194,6 @@ function echoif($str) {
 }
 function pdberror($conn, $str) {
 	$errors[] = $conn->error;
-	
 	echoif("=DB==================================================================\n");
     printf("error : %s\n", $Sconn->errno);
 	print_r($errors);
@@ -1043,7 +1227,7 @@ function vaciar_tablas($conn, $listaTablas) {
 			pdberror($conn, $del_query." failed: ");
 			echoif("\n\n");
 		} else {
-			echoif("Se borro ok ".$tabla."\n\n");
+			echoif("Se borro ok ".$tabla."\n");
 		}
 	}
 	echoif("Listo borrar tablas\n\n");

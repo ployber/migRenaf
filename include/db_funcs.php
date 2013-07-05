@@ -57,14 +57,14 @@ ifnull(titulares.CyNivelEducativo, 0) CyNivelEducativo,
 titulares.CyViveEnElPredio,
 ifnull(titulares.CyTrabajaEnElPredio, 0) CyTrabajaEnElPredio,
 titulares.Cyparentesco,
-titulares.ProdVegetal,
-titulares.ProdAnimal,
-titulares.ProdAgroindustria,
-titulares.ProdArtesania,
-titulares.ProdCaza,
-titulares.ProdRecoleccion,
-titulares.ProdPesca,
-titulares.ProdTirismoRural,
+ifnull(titulares.ProdVegetal, 0) ProdVegetal,
+ifnull(titulares.ProdAnimal, 0) ProdAnimal,
+ifnull(titulares.ProdAgroindustria, 0) ProdAgroindustria,
+ifnull(titulares.ProdArtesania, 0) ProdArtesania,
+ifnull(titulares.ProdCaza, 0) ProdCaza,
+ifnull(titulares.ProdRecoleccion, 0) ProdRecoleccion,
+ifnull(titulares.ProdPesca, 0) ProdPesca,
+ifnull(titulares.ProdTirismoRural, 0) ProdTirismoRural,
 titulares.ForzadoProdVegetal,
 titulares.ForzadoProdAnimal,
 titulares.ForzadoProdAgroindustria,
@@ -507,6 +507,168 @@ on ifnull(titulares.CyNivelEducativo, '0') = niveled2.codigo
 ";
  
 }
+
+function select_prodvegetal($k1, $k2, $k3) {
+	return "SELECT
+p.PVACampo PVACampo,
+p.PVCubierta PVCubierta,
+p.PVVolumen PVVolumen,
+p.PVUn PVUn,
+ifnull(p.PVUnidad, 0) PVUnidad,
+p.PVAutoconsumo PVAutoconsumo,
+p.PVMercado PVMercado,
+p.PVIntercambio PVIntercambio,
+p.PVPrecioUnitario PVPrecioUnitario,
+	
+ifnull(a.Codigo, ifnull(p.pvCodigo, 0)) act_cod,
+ifnull(a.Descripcion, '') act_desc,
+
+ifnull(s.Codigo, ifnull(p.PVun, 0)) sup_cod,
+ifnull(s.Descripcion, '') suc_desc,
+
+ifnull(e.Codigo, ifnull(p.PVExplotacion, 0)) exp_cod,
+ifnull(e.Descripcion, '') exp_desc,
+
+ifnull(v.Codigo, ifnull(p.PVUnidad, 0)) vol_cod,
+ifnull(v.Descripcion, '') vol_desc,
+
+ifnull(c.Codigo, ifnull(p.PVCanal, 0)) can_cod,
+ifnull(c.Descripcion, '') can_desc
+
+from prodvegetal p
+left join actividadvegetal a on p.pvCodigo = a.Codigo
+left join tiposuperficie s on p.PVun = s.Codigo
+left join tipoexplotacion e on p.PVExplotacion = e.Codigo
+left join tipovolumen v on p.PVUnidad = v.Codigo
+left join tipocanal c on p.PVCanal = c.Codigo
+where p.VentanillaRegistro = ".$k1." and p.pc = ".$k2." and p.CorrelativoTitular = ".$k3 
+;
+ 
+}
+
+
+function select_prodanimal($k1, $k2, $k3) {
+	return "select
+p.PACodigo PACodigo,
+p.PASubCodigo PASubCodigo,
+p.PAVientres PAVientres,
+p.PACabezas PACabezas,
+p.PAAutoConsumo PAAutoConsumo,
+p.PAMercado PAMercado,
+p.PAIntercambio PAIntercambio,
+p.PAVolumen PAVolumen,
+p.PAUnidad PAUnidad,
+p.PAPrecioUnitario PAPrecioUnitario,
+p.PAExplotacion PAExplotacion,
+p.PACanal PACanal,
+
+ifnull(a.Codigo, ifnull(p.PACodigo, 0)) actani_cod,
+ifnull(an.Descripcion, '') actani_desc,
+
+ifnull(a.Codigo, ifnull(p.PASubCodigo, '')) act_cod,
+ifnull(a.Descripcion, '') act_desc,
+
+ifnull(e.Codigo, ifnull(p.PAExplotacion, 0)) exp_cod,
+ifnull(e.Descripcion, '') exp_desc,
+
+ifnull(v.Codigo, ifnull(p.PAUnidad, 0)) vol_cod,
+ifnull(v.Descripcion, '') vol_desc,
+
+ifnull(c.Codigo, ifnull(p.PACanal, 0)) can_cod,
+ifnull(c.Descripcion, '') can_desc
+
+from prodanimal p
+left join actividadanimal an on p.PACodigo = an.Codigo
+left join actividades a on p.PASubCodigo = a.Codigo
+left join tipoexplotacion e on p.PAExplotacion = e.Codigo
+left join tipovolumen v on p.PAUnidad = v.Codigo
+left join tipocanal c on p.PACanal = c.Codigo
+where p.VentanillaRegistro = ".$k1." and p.pc = ".$k2." and p.CorrelativoTitular = ".$k3 
+;
+ 
+}
+		
+
+function select_artesanias($k1, $k2, $k3) {
+	return "SELECT
+p.ArtesaniaCodigo ArtesaniaCodigo,
+p.ArtesaniaSubCodigo ArtesaniaSubCodigo,
+p.ArtesaniaExplotacion ArtesaniaExplotacion,
+p.ArtesaniaCosechaMP ArtesaniaCosechaMP,
+p.ArtesaniaVolumen ArtesaniaVolumen,
+p.ArtesaniaUnidad ArtesaniaUnidad,
+p.ArtesaniaPrecio ArtesaniaPrecio,
+p.ArtesaniaCanal ArtesaniaCanal,
+
+ifnull(a.Codigo, ifnull(p.ArtesaniaCodigo, 0)) act_cod,
+ifnull(a.Descripcion, '') act_desc,
+
+ifnull(v.Codigo, ifnull(p.ArtesaniaUnidad, 0)) vol_cod,
+ifnull(v.Descripcion, '') vol_desc,
+
+ifnull(c.Codigo, ifnull(p.ArtesaniaCanal, 0)) can_cod,
+ifnull(c.Descripcion, '') can_desc
+
+from artesanias p
+left join tipoartesania a on p.ArtesaniaCodigo = a.Codigo
+left join tipovolumen v on p.ArtesaniaUnidad = v.Codigo
+left join tipocanal c on p.ArtesaniaCanal = c.Codigo
+where p.VentanillaRegistro = ".$k1." and p.pc = ".$k2." and p.CorrelativoTitular = ".$k3 
+;
+ 
+}
+
+function select_agroindustria($k1, $k2, $k3) {
+	return "SELECT
+p.AgroindustriaCodigo AgroindustriaCodigo,
+p.AgroindustriaExplotacion AgroindustriaExplotacion,
+p.AgroindustriaProduceMP AgroindustriaProduceMP,
+p.AgroindustriaVolumen AgroindustriaVolumen,
+p.AgroindustriaAutoconsumo AgroindustriaAutoconsumo,
+p.AgroindustriaMercado AgroindustriaMercado,
+p.AgroindustriaIntercambio AgroindustriaIntercambio,
+p.AgroindustriaPrecio AgroindustriaPrecio,
+p.AgroindustriaUnidad AgroindustriaUnidad,
+p.AgroindustriaCanal AgroindustriaCanal,
+
+ifnull(a.Codigo, ifnull(p.AgroindustriaCodigo, '')) act_cod,
+ifnull(a.Descripcion, '') act_desc,
+
+ifnull(v.Codigo, ifnull(p.AgroindustriaUnidad, 0)) vol_cod,
+ifnull(v.Descripcion, '') col_desc,
+
+ifnull(c.Codigo, ifnull(p.AgroindustriaCanal, 0)) can_cod,
+ifnull(c.Descripcion, '') can_desc
+
+from agroindustria p
+left join tipoagroindustria a on p.AgroindustriaCodigo = a.Codigo
+left join tipovolumen v on p.AgroindustriaUnidad = v.Codigo
+left join tipocanal c on p.AgroindustriaCanal = c.Codigo
+where p.VentanillaRegistro = ".$k1." and p.pc = ".$k2." and p.CorrelativoTitular = ".$k3 
+;
+ 
+}
+
+function select_infraestructura($k1, $k2, $k3) {
+	return "SELECT
+p.InfraestructuraCodigo InfraestructuraCodigo,
+p.InfraestructuraCantidad InfraestructuraCantidad,
+p.InfraestructuraAdquisicion InfraestructuraAdquisicion,
+
+ifnull(a.Codigo, ifnull(p.InfraestructuraCodigo, '')) act_cod,
+ifnull(a.Descripcion, '') act_desc,
+
+ifnull(v.Codigo, ifnull(p.InfraestructuraAdquisicion, '')) vol_cod,
+ifnull(v.Descripcion, '') col_desc
+
+from infraestructura p
+left join tipoinfraestructura a on p.InfraestructuraCodigo = a.Codigo
+left join tipoadquisicion v on p.InfraestructuraAdquisicion = v.Codigo
+where p.VentanillaRegistro = ".$k1." and p.pc = ".$k2." and p.CorrelativoTitular = ".$k3 
+;
+ 
+}
+
 function deletes() {
 $delete_naf_completo = "
 delete FROM renaf.naf_completo_integrante;
