@@ -804,7 +804,7 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
-
+			/* act_agricultura_detalle   rel   act_agricultura_act_agricultura_detalle */
 			if ($nRows_pv > 0) {
 				$pv=0;
 				while ($row_pv = mysqli_fetch_array($res_pv)) {
@@ -876,7 +876,7 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
-			/* FALTA!				act_agroindustria_detalle   rel   act_agroindustria_act_agroindustria_detalle */
+			/* act_agroindustria_detalle   rel   act_agroindustria_act_agroindustria_detalle */
 			if ($nRows_ai > 0) {
 				$ai=0;
 				while ($row_ai = mysqli_fetch_array($res_ai)) {
@@ -884,7 +884,7 @@ if ($nRows_titulares > 0) {
 					
 					/* act_produccion */
 					$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
-					$ins_act_produccion .= " values (0, '".trim($row_ai['can_cod'])."', ".$row_ai['AgroindustriaAutoconsumo'].", ".$row_ai['AgroindustriaMercado'].", ".$row_ai['AgroindustriaIntercambio'].", ".$row_ai['AgroindustriaPrecio'].", ".$row_ai['AgroindustriaVolumen'].", ".$row_pv['AgroindustriaUnidad'].", ".$row_pv['exp_cod']." )";
+					$ins_act_produccion .= " values (0, '".trim($row_ai['can_cod'])."', ".$row_ai['AgroindustriaAutoconsumo'].", ".$row_ai['AgroindustriaMercado'].", ".$row_ai['AgroindustriaIntercambio'].", ".$row_ai['AgroindustriaPrecio'].", ".$row_ai['AgroindustriaVolumen'].", ".$row_ai['AgroindustriaUnidad'].", ".$row_ai['exp_cod']." )";
 					echoif("act_produccion\n");
 					echoif($ins_act_produccion."\n");
 					if (!$Tconn->query($ins_act_produccion)) {
@@ -897,7 +897,7 @@ if ($nRows_titulares > 0) {
 					$ins_act_agroindustria_detalle = " insert into act_agroindustria_detalle (version, codigo, descripcion, produccion_id, produce_materia_prima) ";
 					$ins_act_agroindustria_detalle .= " values (0, '".$row_ai['act_cod']."', '".$row_ai['act_desc']."', ".$id_act_produccion.", ".$row_ai['AgroindustriaProduceMP'].")";
 					echoif("act_agroindustria_detalle\n");
-					echoif($ins_act_agroindustria_dact_agricultura_detalle_idetalle."\n");
+					echoif($ins_act_agroindustria_detalle."\n");
 					if (!$Tconn->query($ins_act_agroindustria_detalle)) {
 						pdberror($Tconn, "INSERT act_agroindustria_detalle failed: ");
 						$Errores['act_agroindustria_detalle']++;
@@ -918,10 +918,11 @@ if ($nRows_titulares > 0) {
 					}
 				}
 			}
-						
 		}			
 
+		/**************************************************************************************************/
 		/* actividad_principal ACT_PRINCIPAL_APICULTURA = 'actPrincipalApicultura', 'renaf.ActApicultura' */
+		/**************************************************************************************************/
 		if ($row_tit['PAApiculturaColmenasPropias'] + $row_tit['PAApiculturaColmenasTerceros'] > 0) {					
 			$ins_actividad_principal = " insert into actividad_principal (version, descripcion, class, cantidad_colmenas_propias, cantidad_colmenas_terceros, certificacion_organica, produccion_organica) ";
 			$ins_actividad_principal .= " values (0, 'actPrincipalApicultura', 'renaf.ActApicultura', ".$row_tit['PAApiculturaColmenasPropias'].", ".$row_tit['PAApiculturaColmenasTerceros'].", 0, 0)";
@@ -945,10 +946,292 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
-			/* FALTA!				act_apicultura_detalle   rel   act_apicultura_act_apicultura_detalle */
+			/* act_apicultura_detalle   rel   act_apicultura_act_apicultura_detalle */
+			/* MIEL */
+			/* act_produccion */
+			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+			$ins_act_produccion .= " values (0, '".trim($row_tit['PAApiculturaMielCanal'])."', ".$row_tit['PAApiculturaMielAutoConsumo'].", ".$row_tit['PAApiculturaMielMercado'].", ".$row_tit['PAApiculturaMielIntercambio'].", ".$row_tit['PAApiculturaMielPrecioUnitario'].", ".$row_tit['PAApiculturaMielVolumen'].", ".$row_tit['PAApiculturaMielUnidades'].", ".$row_tit['PAApiculturaMielExplotacion']." )";
+			echoif("act_produccion MIEL\n");
+			echoif($ins_act_produccion."\n");
+			if (!$Tconn->query($ins_act_produccion)) {
+				pdberror($Tconn, "INSERT act_produccion MIEL failed: ");$Errores['act_produccion']++;echoif("\n\n");
+			} else {    
+				$id_act_produccion = $Tconn->insert_id;
+				echoif(" id act_produccion :".$id_act_produccion."\n");
+			}
+			/* act_apicultura_detalle */
+			$ins_act_apicultura_detalle = " insert into act_apicultura_detalle (version, cantidad_de_colmenas, codigo, descripcion, produccion_id) ";
+			$ins_act_apicultura_detalle .= " values (0, '".$row_tit['PAApiculturaMielColmenas']."', '201', 'MIEL', ".$id_act_produccion.")";
+			echoif("act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_detalle']++;
+				echoif("\n\n");
+			} else {    
+				$id_act_apicultura_detalle = $Tconn->insert_id;
+				echoif(" id act_apicultura_detalle MIEL:".$id_act_apicultura_detalle."\n");
+			}
+			/* act_apicultura_act_apicultura_detalle */
+			$ins_act_apicultura_act_apicultura_detalle = " insert into act_apicultura_act_apicultura_detalle (act_apicultura_detalles_id, act_apicultura_detalle_id) ";
+			$ins_act_apicultura_act_apicultura_detalle .= " values (".$id_actividad_principal.", ".$id_act_agroindustria_detalle." )";
+			echoif("act_apicultura_act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_act_apicultura_detalle']++;
+				echoif("\n\n");
+			}
+			/* CERA */
+			/* act_produccion */
+			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+			$ins_act_produccion .= " values (0, '".trim($row_tit['PAApiculturaCeraCanal'])."', ".$row_tit['PAApiculturaCeraAutoConsumo'].", ".$row_tit['PAApiculturaCeraMercado'].", ".$row_tit['PAApiculturaCeraIntercambio'].", ".$row_tit['PAApiculturaCeraPrecioUnitario'].", ".$row_tit['PAApiculturaCeraVolumen'].", ".$row_tit['PAApiculturaCeraUnidades'].", ".$row_tit['PAApiculturaCeraExplotacion']." )";
+			echoif("act_produccion CERA\n");
+			echoif($ins_act_produccion."\n");
+			if (!$Tconn->query($ins_act_produccion)) {
+				pdberror($Tconn, "INSERT act_produccion CERA failed: ");$Errores['act_produccion']++;echoif("\n\n");
+			} else {    
+				$id_act_produccion = $Tconn->insert_id;
+				echoif(" id act_produccion :".$id_act_produccion."\n");
+			}
+			/* act_apicultura_detalle */
+			$ins_act_apicultura_detalle = " insert into act_apicultura_detalle (version, cantidad_de_colmenas, codigo, descripcion, produccion_id) ";
+			$ins_act_apicultura_detalle .= " values (0, '".$row_tit['PAApiculturaCeraColmenas']."', '202', 'CERA', ".$id_act_produccion.")";
+			echoif("act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_detalle']++;
+				echoif("\n\n");
+			} else {    
+				$id_act_apicultura_detalle = $Tconn->insert_id;
+				echoif(" id act_apicultura_detalle CERA:".$id_act_apicultura_detalle."\n");
+			}
+			/* act_apicultura_act_apicultura_detalle */
+			$ins_act_apicultura_act_apicultura_detalle = " insert into act_apicultura_act_apicultura_detalle (act_apicultura_detalles_id, act_apicultura_detalle_id) ";
+			$ins_act_apicultura_act_apicultura_detalle .= " values (".$id_actividad_principal.", ".$id_act_agroindustria_detalle." )";
+			echoif("act_apicultura_act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_act_apicultura_detalle']++;
+				echoif("\n\n");
+			}
+			/* PROPOLEO */
+			/* act_produccion */
+			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+			$ins_act_produccion .= " values (0, '".trim($row_tit['PAApiculturaPropoleoCanal'])."', ".$row_tit['PAApiculturaPropoleoAutoConsumo'].", ".$row_tit['PAApiculturaPropoleoMercado'].", ".$row_tit['PAApiculturaPropoleoIntercambio'].", ".$row_tit['PAApiculturaPropoleoPrecioUnitario'].", ".$row_tit['PAApiculturaPropoleoVolumen'].", ".$row_tit['PAApiculturaPropoleoUnidades'].", ".$row_tit['PAApiculturaPropoleoExplotacion']." )";
+			echoif("act_produccion PROPOLEO\n");
+			echoif($ins_act_produccion."\n");
+			if (!$Tconn->query($ins_act_produccion)) {
+				pdberror($Tconn, "INSERT act_produccion PROPOLEO failed: ");$Errores['act_produccion']++;echoif("\n\n");
+			} else {    
+				$id_act_produccion = $Tconn->insert_id;
+				echoif(" id act_produccion :".$id_act_produccion."\n");
+			}
+			/* act_apicultura_detalle */
+			$ins_act_apicultura_detalle = " insert into act_apicultura_detalle (version, cantidad_de_colmenas, codigo, descripcion, produccion_id) ";
+			$ins_act_apicultura_detalle .= " values (0, '".$row_tit['PAApiculturaPropoleoColmenas']."', '203', 'PROPOLEOS', ".$id_act_produccion.")";
+			echoif("act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_detalle']++;
+				echoif("\n\n");
+			} else {    
+				$id_act_apicultura_detalle = $Tconn->insert_id;
+				echoif(" id act_apicultura_detalle PROPOLEO:".$id_act_apicultura_detalle."\n");
+			}
+			/* act_apicultura_act_apicultura_detalle */
+			$ins_act_apicultura_act_apicultura_detalle = " insert into act_apicultura_act_apicultura_detalle (act_apicultura_detalles_id, act_apicultura_detalle_id) ";
+			$ins_act_apicultura_act_apicultura_detalle .= " values (".$id_actividad_principal.", ".$id_act_agroindustria_detalle." )";
+			echoif("act_apicultura_act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_act_apicultura_detalle']++;
+				echoif("\n\n");
+			}
+			/* JALEA */
+			/* act_produccion */
+			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+			$ins_act_produccion .= " values (0, '".trim($row_tit['PAApiculturaJaleaCanal'])."', ".$row_tit['PAApiculturaJaleaAutoConsumo'].", ".$row_tit['PAApiculturaJaleaMercado'].", ".$row_tit['PAApiculturaJaleaIntercambio'].", ".$row_tit['PAApiculturaJaleaPrecioUnitario'].", ".$row_tit['PAApiculturaJaleaVolumen'].", ".$row_tit['PAApiculturaJaleaUnidades'].", ".$row_tit['PAApiculturaJaleaExplotacion']." )";
+			echoif("act_produccion JALEA\n");
+			echoif($ins_act_produccion."\n");
+			if (!$Tconn->query($ins_act_produccion)) {
+				pdberror($Tconn, "INSERT act_produccion JALEA failed: ");$Errores['act_produccion']++;echoif("\n\n");
+			} else {    
+				$id_act_produccion = $Tconn->insert_id;
+				echoif(" id act_produccion :".$id_act_produccion."\n");
+			}
+			/* act_apicultura_detalle */
+			$ins_act_apicultura_detalle = " insert into act_apicultura_detalle (version, cantidad_de_colmenas, codigo, descripcion, produccion_id) ";
+			$ins_act_apicultura_detalle .= " values (0, '".$row_tit['PAApiculturaJaleaColmenas']."', '204', 'JALEA', ".$id_act_produccion.")";
+			echoif("act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_detalle']++;
+				echoif("\n\n");
+			} else {    
+				$id_act_apicultura_detalle = $Tconn->insert_id;
+				echoif(" id act_apicultura_detalle JALEA:".$id_act_apicultura_detalle."\n");
+			}
+			/* act_apicultura_act_apicultura_detalle */
+			$ins_act_apicultura_act_apicultura_detalle = " insert into act_apicultura_act_apicultura_detalle (act_apicultura_detalles_id, act_apicultura_detalle_id) ";
+			$ins_act_apicultura_act_apicultura_detalle .= " values (".$id_actividad_principal.", ".$id_act_agroindustria_detalle." )";
+			echoif("act_apicultura_act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_act_apicultura_detalle']++;
+				echoif("\n\n");
+			}
+			/* POLEN */
+			/* act_produccion */
+			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+			$ins_act_produccion .= " values (0, '".trim($row_tit['PAApiculturaPolenCanal'])."', ".$row_tit['PAApiculturaPolenAutoConsumo'].", ".$row_tit['PAApiculturaPolenMercado'].", ".$row_tit['PAApiculturaPolenIntercambio'].", ".$row_tit['PAApiculturaPolenPrecioUnitario'].", ".$row_tit['PAApiculturaPolenVolumen'].", ".$row_tit['PAApiculturaPolenUnidades'].", ".$row_tit['PAApiculturaPolenExplotacion']." )";
+			echoif("act_produccion POLEN\n");
+			echoif($ins_act_produccion."\n");
+			if (!$Tconn->query($ins_act_produccion)) {
+				pdberror($Tconn, "INSERT act_produccion POLEN failed: ");$Errores['act_produccion']++;echoif("\n\n");
+			} else {    
+				$id_act_produccion = $Tconn->insert_id;
+				echoif(" id act_produccion :".$id_act_produccion."\n");
+			}
+			/* act_apicultura_detalle */
+			$ins_act_apicultura_detalle = " insert into act_apicultura_detalle (version, cantidad_de_colmenas, codigo, descripcion, produccion_id) ";
+			$ins_act_apicultura_detalle .= " values (0, '".$row_tit['PAApiculturaPolenColmenas']."', '205', 'POLEN', ".$id_act_produccion.")";
+			echoif("act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_detalle']++;
+				echoif("\n\n");
+			} else {    
+				$id_act_apicultura_detalle = $Tconn->insert_id;
+				echoif(" id act_apicultura_detalle POLEN:".$id_act_apicultura_detalle."\n");
+			}
+			/* act_apicultura_act_apicultura_detalle */
+			$ins_act_apicultura_act_apicultura_detalle = " insert into act_apicultura_act_apicultura_detalle (act_apicultura_detalles_id, act_apicultura_detalle_id) ";
+			$ins_act_apicultura_act_apicultura_detalle .= " values (".$id_actividad_principal.", ".$id_act_agroindustria_detalle." )";
+			echoif("act_apicultura_act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_act_apicultura_detalle']++;
+				echoif("\n\n");
+			}
+			/* NUCLEOS */
+			/* act_produccion */
+			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+			$ins_act_produccion .= " values (0, '".trim($row_tit['PAApiculturaNucleosCanal'])."', ".$row_tit['PAApiculturaNucleosAutoConsumo'].", ".$row_tit['PAApiculturaNucleosMercado'].", ".$row_tit['PAApiculturaNucleosIntercambio'].", ".$row_tit['PAApiculturaNucleosPrecioUnitario'].", ".$row_tit['PAApiculturaNucleosVolumen'].", ".$row_tit['PAApiculturaNucleosUnidades'].", ".$row_tit['PAApiculturaNucleosExplotacion']." )";
+			echoif("act_produccion NUCLEOS\n");
+			echoif($ins_act_produccion."\n");
+			if (!$Tconn->query($ins_act_produccion)) {
+				pdberror($Tconn, "INSERT act_produccion NUCLEOS failed: ");$Errores['act_produccion']++;echoif("\n\n");
+			} else {    
+				$id_act_produccion = $Tconn->insert_id;
+				echoif(" id act_produccion :".$id_act_produccion."\n");
+			}
+			/* act_apicultura_detalle */
+			$ins_act_apicultura_detalle = " insert into act_apicultura_detalle (version, cantidad_de_colmenas, codigo, descripcion, produccion_id) ";
+			$ins_act_apicultura_detalle .= " values (0, '".$row_tit['PAApiculturaNucleosColmenas']."', '206', 'NUCLEOS', ".$id_act_produccion.")";
+			echoif("act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_detalle']++;
+				echoif("\n\n");
+			} else {    
+				$id_act_apicultura_detalle = $Tconn->insert_id;
+				echoif(" id act_apicultura_detalle NUCLEOS:".$id_act_apicultura_detalle."\n");
+			}
+			/* act_apicultura_act_apicultura_detalle */
+			$ins_act_apicultura_act_apicultura_detalle = " insert into act_apicultura_act_apicultura_detalle (act_apicultura_detalles_id, act_apicultura_detalle_id) ";
+			$ins_act_apicultura_act_apicultura_detalle .= " values (".$id_actividad_principal.", ".$id_act_agroindustria_detalle." )";
+			echoif("act_apicultura_act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_act_apicultura_detalle']++;
+				echoif("\n\n");
+			}
+			/* REINAS */
+			/* act_produccion */
+			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+			$ins_act_produccion .= " values (0, '".trim($row_tit['PAApiculturaMaterialVivoCanal'])."', ".$row_tit['PAApiculturaMaterialVivoAutoConsumo'].", ".$row_tit['PAApiculturaMaterialVivoMercado'].", ".$row_tit['PAApiculturaMaterialVivoIntercambio'].", ".$row_tit['PAApiculturaMaterialVivoPrecioUnitario'].", ".$row_tit['PAApiculturaMaterialVivoVolumen'].", ".$row_tit['PAApiculturaMaterialVivoUnidades'].", ".$row_tit['PAApiculturaMaterialVivoExplotacion']." )";
+			echoif("act_produccion REINAS\n");
+			echoif($ins_act_produccion."\n");
+			if (!$Tconn->query($ins_act_produccion)) {
+				pdberror($Tconn, "INSERT act_produccion REINAS failed: ");$Errores['act_produccion']++;echoif("\n\n");
+			} else {    
+				$id_act_produccion = $Tconn->insert_id;
+				echoif(" id act_produccion :".$id_act_produccion."\n");
+			}
+			/* act_apicultura_detalle */
+			$ins_act_apicultura_detalle = " insert into act_apicultura_detalle (version, cantidad_de_colmenas, codigo, descripcion, produccion_id) ";
+			$ins_act_apicultura_detalle .= " values (0, '".$row_tit['PAApiculturaMaterialVivoColmenas']."', '207', 'REINAS', ".$id_act_produccion.")";
+			echoif("act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_detalle']++;
+				echoif("\n\n");
+			} else {    
+				$id_act_apicultura_detalle = $Tconn->insert_id;
+				echoif(" id act_apicultura_detalle REINAS:".$id_act_apicultura_detalle."\n");
+			}
+			/* act_apicultura_act_apicultura_detalle */
+			$ins_act_apicultura_act_apicultura_detalle = " insert into act_apicultura_act_apicultura_detalle (act_apicultura_detalles_id, act_apicultura_detalle_id) ";
+			$ins_act_apicultura_act_apicultura_detalle .= " values (".$id_actividad_principal.", ".$id_act_agroindustria_detalle." )";
+			echoif("act_apicultura_act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_act_apicultura_detalle']++;
+				echoif("\n\n");
+			}
+			/* OTRO */
+			/* act_produccion */
+			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+			$ins_act_produccion .= " values (0, '".trim($row_tit['PAApiculturaOtroCanal'])."', ".$row_tit['PAApiculturaOtroAutoConsumo'].", ".$row_tit['PAApiculturaOtroMercado'].", ".$row_tit['PAApiculturaOtroIntercambio'].", ".$row_tit['PAApiculturaOtroPrecioUnitario'].", ".$row_tit['PAApiculturaOtroVolumen'].", ".$row_tit['PAApiculturaOtroUnidades'].", ".$row_tit['PAApiculturaOtroExplotacion']." )";
+			echoif("act_produccion OTRO\n");
+			echoif($ins_act_produccion."\n");
+			if (!$Tconn->query($ins_act_produccion)) {
+				pdberror($Tconn, "INSERT act_produccion OTRO failed: ");$Errores['act_produccion']++;echoif("\n\n");
+			} else {    
+				$id_act_produccion = $Tconn->insert_id;
+				echoif(" id act_produccion :".$id_act_produccion."\n");
+			}
+			/* act_apicultura_detalle */
+			$ins_act_apicultura_detalle = " insert into act_apicultura_detalle (version, cantidad_de_colmenas, codigo, descripcion, produccion_id) ";
+			$ins_act_apicultura_detalle .= " values (0, '".$row_tit['PAApiculturaOtroColmenas']."', '208', 'OTRO', ".$id_act_produccion.")";
+			echoif("act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_detalle']++;
+				echoif("\n\n");
+			} else {    
+				$id_act_apicultura_detalle = $Tconn->insert_id;
+				echoif(" id act_apicultura_detalle OTRO:".$id_act_apicultura_detalle."\n");
+			}
+			/* act_apicultura_act_apicultura_detalle */
+			$ins_act_apicultura_act_apicultura_detalle = " insert into act_apicultura_act_apicultura_detalle (act_apicultura_detalles_id, act_apicultura_detalle_id) ";
+			$ins_act_apicultura_act_apicultura_detalle .= " values (".$id_actividad_principal.", ".$id_act_agroindustria_detalle." )";
+			echoif("act_apicultura_act_apicultura_detalle\n");
+			echoif($ins_act_apicultura_act_apicultura_detalle."\n");
+			if (!$Tconn->query($ins_act_apicultura_act_apicultura_detalle)) {
+				pdberror($Tconn, "INSERT act_apicultura_act_apicultura_detalle failed: ");
+				$Errores['act_apicultura_act_apicultura_detalle']++;
+				echoif("\n\n");
+			}
 		}
 
+		/***********************************************************************************************/
 		/* actividad_principal ACT_PRINCIPAL_ARTESANIA = 'actPrincipalArtesania', 'renaf.ActArtesania' */
+		/***********************************************************************************************/
 		if ($row_tit['ProdArtesania']) {
 			$ins_actividad_principal = " insert into actividad_principal (version, descripcion, class, cantidad_colmenas_propias, cantidad_colmenas_terceros, certificacion_organica, produccion_organica) ";
 			$ins_actividad_principal .= " values (0, 'actPrincipalArtesania', 'renaf.ActArtesania', null, null, 0, 0)";
@@ -972,7 +1255,48 @@ if ($nRows_titulares > 0) {
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
-			/* FALTA!				act_artesania_detalle   rel   act_artesania_act_artesania_detalle */
+			/* act_artesania_detalle   rel   act_artesania_act_artesania_detalle */
+			if ($nRows_ar > 0) {
+				$ar=0;
+				while ($row_ar = mysqli_fetch_array($res_ar)) {
+					$ar++;
+					
+					/* act_produccion */
+					$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+					$ins_act_produccion .= " values (0, '".trim($row_ar['can_cod'])."', null, null, null, ".$row_ar['ArtesaniaPrecio'].", ".$row_ar['ArtesaniaVolumen'].", ".$row_ar['ArtesaniaUnidad'].", ".$row_ar['exp_cod']." )";
+					echoif("act_produccion\n");
+					echoif($ins_act_produccion."\n");
+					if (!$Tconn->query($ins_act_produccion)) {
+						pdberror($Tconn, "INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
+					} else {    
+						$id_act_produccion = $Tconn->insert_id;
+						echoif(" id act_produccion :".$id_act_produccion."\n");
+					}
+					/* act_artesania_detalle */
+					$ins_act_artesania_detalle = " insert into act_artesania_detalle (version, codigo, descripcion, produccion_id, produce_materia_prima) ";
+					$ins_act_artesania_detalle .= " values (0, '".$row_ar['act_cod']."', '".$row_ar['act_desc']."', ".$id_act_produccion.", ".$row_ar['ArtesaniaCosechaMP'].")";
+					echoif("act_artesania_detalle\n");
+					echoif($ins_act_artesania_detalle."\n");
+					if (!$Tconn->query($ins_act_artesania_detalle)) {
+						pdberror($Tconn, "INSERT act_artesania_detalle failed: ");
+						$Errores['act_artesania_detalle']++;
+						echoif("\n\n");
+					} else {    
+						$id_act_artesania_detalle = $Tconn->insert_id;
+						echoif(" id act_artesania_detalle :".$id_act_artesania_detalle."\n");
+					}
+					/* act_artesania_act_artesania_detalle */
+					$ins_act_artesania_act_artesania_detalle = " insert into act_artesania_act_artesania_detalle (act_artesania_detalles_id, act_artesania_detalle_id) ";
+					$ins_act_artesania_act_artesania_detalle .= " values (".$id_actividad_principal.", ".$id_act_artesania_detalle." )";
+					echoif("act_artesania_act_artesania_detalle\n");
+					echoif($ins_act_artesania_act_artesania_detalle."\n");
+					if (!$Tconn->query($ins_act_artesania_act_artesania_detalle)) {
+						pdberror($Tconn, "INSERT act_artesania_act_artesania_detalle failed: ");
+						$Errores['act_artesania_act_artesania_detalle']++;
+						echoif("\n\n");
+					}
+				}
+			}
 		}
 
 		/* actividad_principal ACT_PRINCIPAL_CAZA = 'actPrincipalCaza', 'renaf.ActCaza' */
