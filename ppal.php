@@ -2,7 +2,8 @@
 include("include/db_funcs.php"); 
 include("include/funciones.php");
 
-define("DEBUG",0);
+define("DEBUG", 1);
+
 $Errores = Array(
 	"persona"=>0,
 	"titular_completa"=>0,
@@ -109,7 +110,7 @@ switch ($argc) {
 }
 
 $DESDE="1";
-$TOPEFILASAPROCESAR=400;
+$TOPEFILASAPROCESAR=99999;
 if (empty($arg2)) {
 	if (!empty($arg1)) {
 		if (is_numeric($arg1)) {
@@ -162,30 +163,132 @@ if ($Sconn->errno) {
 	print_r($errors);
 } 
 $nRows_titulares = $Sconn->affected_rows;
-echoif($nRows_titulares. "filas\n\n");
+echoif($nRows_titulares. " filas\n\n");
 if ($nRows_titulares > 0) {
 	$i=0;
 	while ($row_tit = mysqli_fetch_array($res_titulares)) {
 		//print_r($row_tit);
+		$i++;
+
 		$k1 = $row_tit['Ventanillaregistro']; 
 		$k2 = $row_tit['pc']; 
-		$k3 = $row_tit['Correlativo']; 
+		$k3 = $row_tit['Correlativo'];
 		
-		$tit_TipoDocumento = $row_tit['TipoDocumento'];
-		$tit_NumeroDocumento = $row_tit['NumeroDocumento'];
-		$tit_Apellido = $row_tit['Apellido'];
-		$tit_Nombres = $row_tit['Nombres'];
-		$tit_FechaNacimiento = $row_tit['FechaNacimiento'];
-		$tit_IdDocumento = $row_tit['tdtit_id'];
+		if ($i > $TOPEFILASAPROCESAR) {
+			//$result->close();
+			break;
+		}
+		if (!empty($DESDE)) {
+			if ($i < $DESDE -1) {
+				continue;
+			}
+		}
+		echoif("row ".$i." Key:[".$k1."-".$k2."-".$k3."]");
+		echoif(" Titular :[".$row_tit['TipoDocumento']."][".$row_tit['NumeroDocumento']."]");
+		echoif(" Conyuge :[".$row_tit['CyTipoDocumento']."][".$row_tit['CyNumeroDocumento']."]\n");
+		
+		
+		if (($i % 100) == 0 ) {
+			echo "row ".$i." Key:[".$k1."-".$k2."-".$k3."]\n";
+		}
 
-		$cy_TipoDocumento = $row_tit['CyTipoDocumento'];
-		$cy_NumeroDocumento = $row_tit['CyNumeroDocumento'];
-		$cy_Apellido = $row_tit['CyApellido'];
-		$cy_Nombres = $row_tit['CyNombres'];
-		$cy_FechaNacimiento = $row_tit['CyFechaNacimiento'];
-		$cy_IdDocumento = $row_tit['tdcy_id'];
+		if ($row_tit['NumeroDocumento'] == "") {
+			//salto a la fila siguiente
+			echoif(" sin datos del titular, ignoro registro.\n\n");
+			echoif("\n\n\n");
+			continue;
+		}
+				
+		$id_titular = -1;
+		$id_conyuge = -1;
+		$id_tit_completa_tit = -1;
+		$id_tit_completa_cy = -1;
 		
-		if ($cy_NumeroDocumento != "" && $cy_NumeroDocumento != "0") {
+		
+		$n_TipoDocumento = intval($row_tit['TipoDocumento']);
+		$n_NumeroDocumento = floatval($row_tit['NumeroDocumento']);
+		$n_CyTipoDocumento = intval($row_tit['CyTipoDocumento']);
+		$n_CyNumeroDocumento = floatval($row_tit['CyNumeroDocumento']);
+		
+		/* Si cualquiera de los dos ya existe en la tabla personas NO proceso el registro */
+		/* existe titular */
+		$existe_titular=0;
+		$sql  = " SELECT * FROM ".SOURCEDB.".titulares t ";
+		$sql .= " LEFT JOIN ".TARGETDB.".tipo_documento d ON ifnull( t.TipoDocumento, '-1' ) = d.codigo ";
+		$sql .= " JOIN ".TARGETDB.".persona p ON p.documento = t.NumeroDocumento ";
+		$sql .= " AND tipo_documento_id = d.id ";
+		$sql .= " WHERE t.NumeroDocumento = '".$row_tit['NumeroDocumento']."'";
+		$sql .= " AND t.TipoDocumento = '".$row_tit['TipoDocumento']."'";
+		echo $sql."\n";
+		$res_existe_titular = $Sconn->query($sql);
+		if ($Sconn->errno) {
+			$errors[] = $Sconn->error;
+		    printf("error : %s\n", $Sconn->errno);
+			echo $sql."\n";
+			print_r($errors);
+		} else { 
+			$nRows_existe_titular = $Sconn->affected_rows;
+			if ($nRows_existe_titular > 0) {
+				$row_existe_titular = mysqli_fetch_array($res_existe_titular);
+				if ($row_tit['NumeroDocumento'] == $row_existe_titular['documento']) {
+					$existe_titular=1;
+				}
+			}
+		}
+		
+		/* existe_conyuge */
+		$existe_conyuge=0;
+		$sql  = " SELECT * FROM ".SOURCEDB.".titulares t ";
+		$sql .= " LEFT JOIN ".TARGETDB.".tipo_documento d ON ifnull( t.CyTipoDocumento, '-1' ) = d.codigo ";
+		$sql .= " JOIN ".TARGETDB.".persona p ON p.documento = t.CyNumeroDocumento ";
+		$sql .= " AND tipo_documento_id = d.id ";
+		$sql .= " WHERE t.CyNumeroDocumento = '".$row_tit['CyNumeroDocumento']."'";
+		$sql .= " AND t.CyTipoDocumento = '".$row_tit['CyTipoDocumento']."'";
+		$res_existe_conyuge = $Sconn->query($sql);
+		echo $sql."\n";
+		if ($Sconn->errno) {
+			$errors[] = $Sconn->error;
+		    printf("error : %s\n", $Sconn->errno);
+			echo $sql."\n";
+			print_r($errors);
+		} else { 
+			$nRows_existe_conyuge = $Sconn->affected_rows;
+			if ($nRows_existe_conyuge > 0) {
+				$row_existe_conyuge = mysqli_fetch_array($res_existe_conyuge);
+				if ($row_tit['CyNumeroDocumento'] == $row_existe_conyuge['documento']) {
+					$existe_conyuge=1;
+				}
+			}
+		}
+		echo "[".$existe_titular."][".$existe_conyuge."]\n";
+
+		if ($existe_titular || $existe_conyuge) {
+			//salto a la fila siguiente
+			if ($existe_titular) {
+				echo "Ya existe el titular en la tabla de personas ".$row_tit['TipoDocumento']."-".$row_tit['NumeroDocumento'];
+			}
+			if ($existe_conyuge) {
+				echo "Ya existe el conyuge en la tabla de personas ".$row_tit['CyTipoDocumento']."-".$row_tit['CyNumeroDocumento'];
+			}
+			echoif("\nignoro registro.\n\n");
+			echoif("\n\n\n");
+			continue;
+		}
+
+/*
+		echo "Titular :[".$row_tit['TipoDocumento']."][".$row_tit['NumeroDocumento']."]\n";
+		echo "Titular :[".$n_TipoDocumento."][".$n_NumeroDocumento."]\n";
+		echo "Conyuge :[".$row_tit['CyTipoDocumento']."][".$row_tit['CyNumeroDocumento']."]\n";
+		echo "Conyuge :[".$n_CyTipoDocumento."][".$n_CyNumeroDocumento."]\n";
+
+		if ($row_tit['CyNumeroDocumento'] != "" && $row_tit['CyNumeroDocumento'] != "0") {
+			$SINCONYUGE=0;
+		} else {
+			$SINCONYUGE=1;
+		}
+*/
+
+		if ($n_CyNumeroDocumento > 0) {
 			$SINCONYUGE=0;
 		} else {
 			$SINCONYUGE=1;
@@ -274,26 +377,6 @@ if ($nRows_titulares > 0) {
 			echoif("Obtenidos registros agroindustria ".$nRows_ai."\n\n");
 		}
 
-		$i++;
-		if ($i > $TOPEFILASAPROCESAR) {
-			//$result->close();
-			break;
-		}
-		if (!empty($DESDE)) {
-			if ($i < $DESDE -1) {
-				continue;
-			}
-		}
-		echoif("row ".$i." Key:[".$k1."-".$k2."-".$k3."]\n");
-		if (($i % 100) == 0 ) {
-			echo "row ".$i." Key:[".$k1."-".$k2."-".$k3."]\n";
-		}
-				
-		$id_titular = -1;
-		$id_conyuge = -1;
-		$id_tit_completa_tit = -1;
-		$id_tit_completa_cy = -1;
-		
 		/*
 		naf_completo
 		has many titular_completo
@@ -303,43 +386,40 @@ if ($nRows_titulares > 0) {
 		*/	 		
 		/* INSERT persona */
 		echoif("titular\n");
-		echoif(" tit_IdDocumento[".$tit_IdDocumento."]\n tit_TipoDocumento[".$tit_TipoDocumento."]\n tit_NumeroDocumento[".$tit_NumeroDocumento."]\n tit_Nombres[".$tit_Nombres."]\n tit_Apellido[".$tit_Apellido."]\n");
+		echoif(" tit_IdDocumento[".$row_tit['tdtit_id']."]\n tit_TipoDocumento[".$row_tit['TipoDocumento']."]\n tit_NumeroDocumento[".$row_tit['NumeroDocumento']."]\n tit_Nombres[".$row_tit['Nombres']."]\n tit_Apellido[".$row_tit['Apellido']."]\n");
 		echoif(" Nivel educativo [".$row_tit['NivelEducativo']."]\n");
 		echoif(" Nivel educativo Cy [".$row_tit['CyNivelEducativo']."]\n");
 		echoif(" parentesco [".$row_tit['parentesco']."]\n");
 		echoif(" Cyparentesco [".$row_tit['Cyparentesco']."]\n");
 		
-		if ($tit_NumeroDocumento != "") {
-			$ins_titular = " INSERT INTO persona (version, apellido, documento, fecha_nacimiento, nacionalidad, nombre, sexo, tipo_documento_id) ";
-			$ins_titular .= " VALUES ( 0, '".$tit_Apellido."', '".$tit_NumeroDocumento."', '".$tit_FechaNacimiento."', 'Argentina', '".$tit_Nombres."', 'M', ".$tit_IdDocumento.")";
-			echoif($ins_titular."\n");
-			if (!$Tconn->query($ins_titular)) {
-				pdberror($Tconn, "INSERT persona (titular) failed: ");
-				$Errores['persona']++;
-				echoif("\n\n");
-			} else {
-				$id_titular = $Tconn->insert_id;
-				echoif(" id persona:".$id_titular."\n\n");
-			}
+		$apellido = mysqli_real_escape_string($Tconn, $row_tit['Apellido']);
+		$nombres = mysqli_real_escape_string($Tconn, $row_tit['Nombres']);
+		$ins_titular = " INSERT INTO persona (version, apellido, documento, fecha_nacimiento, nacionalidad, nombre, sexo, tipo_documento_id) ";
+		$ins_titular .= " VALUES ( 0, '".$apellido."', '".$row_tit['NumeroDocumento']."', '".$row_tit['FechaNacimiento']."', 'Argentina', '".$nombres."', 'M', ".$row_tit['tdtit_id'].")";
+		echoif($ins_titular."\n");
+		if (!$Tconn->query($ins_titular)) {
+			pdberror($Tconn, $ins_titular."\n"."INSERT persona (titular) failed: ");
+			$Errores['persona']++;
+			echoif("\n\n");
 		} else {
-			//salto a la fila siguiente
-			echoif(" sin datos del titular, ignoro registro.\n\n");
-			echoif("\n\n\n");
-			continue;
+			$id_titular = $Tconn->insert_id;
+			echoif(" id persona:".$id_titular."\n\n");
 		}
 		if (empty($id_titular)) {
 			$id_titular = "null";
 		}
 
 		echoif("conyuge\n");
-		echoif(" cy_IdDocumento[".$cy_IdDocumento."]\n cy_TipoDocumento[".$cy_TipoDocumento."]\n cy_NumeroDocumento[".$cy_NumeroDocumento."]\n cy_Nombres[".$cy_Nombres."]\n cy_Apellido[".$cy_Apellido."]\n");
+		echoif(" cy_IdDocumento[".$row_tit['tdcy_id']."]\n cy_TipoDocumento[".$row_tit['CyTipoDocumento']."]\n cy_NumeroDocumento[".$row_tit['CyNumeroDocumento']."]\n cy_Nombres[".$row_tit['CyNombres']."]\n cy_Apellido[".$row_tit['CyApellido']."]\n");
 				
 		if (!$SINCONYUGE) {
+			$apellido = mysqli_real_escape_string($Tconn, $row_tit['CyApellido']);
+			$nombres = mysqli_real_escape_string($Tconn, $row_tit['CyNombres']);
 			$ins_conyuge = " INSERT INTO persona (version, apellido, documento, fecha_nacimiento, nacionalidad, nombre, sexo, tipo_documento_id) ";
-			$ins_conyuge .= " VALUES ( 0, '".$cy_Apellido."', '".$cy_NumeroDocumento."', '".$cy_FechaNacimiento."', 'Argentina', '".$cy_Nombres."', 'F', ".$cy_IdDocumento.")";
+			$ins_conyuge .= " VALUES ( 0, '".$apellido."', '".$row_tit['CyNumeroDocumento']."', '".$row_tit['CyFechaNacimiento']."', 'Argentina', '".$nombres."', 'F', ".$row_tit['tdcy_id'].")";
 			echoif($ins_conyuge."\n");
 			if (!$Tconn->query($ins_conyuge)) {
-				pdberror($Tconn, "INSERT persona (conyuge) failed: ");
+				pdberror($Tconn, $ins_conyuge."\n"."INSERT persona (conyuge) failed: ");
 				$Errores['persona']++;				
 				echoif("\n\n");
 			} else {    
@@ -353,12 +433,12 @@ if ($nRows_titulares > 0) {
 		}
 		/* Integrantes */
 		echoif("Integrante titular\n");
-		if ($tit_NumeroDocumento != "") {
+		if ($row_tit['NumeroDocumento'] != "") {
 			$ins_integrante = " INSERT INTO integrante (version, nivel_educativo_id, parentescoh_id, parentescom_id, persona_id, trabaja_en_naf) ";
 			$ins_integrante .= " VALUES ( 0, ".trim($row_tit['niveled1_id']).", ".trim($row_tit['parentesco1_id']).", ".trim($row_tit['parentesco2_id']).", ".$id_titular.", b'".$row_tit['TrabajaEnElPredio']."')";
 			echoif($ins_integrante."\n");
 			if (!$Tconn->query($ins_integrante)) {
-				pdberror($Tconn, "INSERT integrante (titular) failed: ");
+				pdberror($Tconn, $ins_integrante."\n"."INSERT integrante (titular) failed: ");
 				$Errores['integrante']++;
 				echoif("\n\n");
 			} else {
@@ -376,7 +456,7 @@ if ($nRows_titulares > 0) {
 			$ins_integrante .= " VALUES ( 0, ".trim($row_tit['niveled2_id']).", ".trim($row_tit['parentesco2_id']).", ".trim($row_tit['parentesco1_id']).", ".$id_conyuge.", b'".$row_tit['CyTrabajaEnElPredio']."')";
 			echoif($ins_integrante."\n");
 			if (!$Tconn->query($ins_integrante)) {
-				pdberror($Tconn, "INSERT integrante (conyuge) failed: ");
+				pdberror($Tconn, $ins_integrante."\n"."INSERT integrante (conyuge) failed: ");
 				$Errores['integrante']++;
 				echoif("\n\n");
 			} else {
@@ -395,7 +475,7 @@ if ($nRows_titulares > 0) {
 		echoif("titular_completa (titular)\n");
 		echoif($ins_tit_completa."\n");
 		if (!$Tconn->query($ins_tit_completa)) {
-			pdberror($Tconn, "INSERT titular_completa (titular) failed: ");
+			pdberror($Tconn, $ins_tit_completa."\n"."INSERT titular_completa (titular) failed: ");
 			$Errores['titular_completa']++;
 			echoif("\n\n");
 		} else {
@@ -408,7 +488,7 @@ if ($nRows_titulares > 0) {
 			echoif("titular_completa (conyuge)\n");
 			echoif($ins_tit_completa."\n");
 			if (!$Tconn->query($ins_tit_completa)) {
-				pdberror($Tconn, "INSERT titular_completa (conyuge) failed: ");
+				pdberror($Tconn, $ins_tit_completa."\n"."INSERT titular_completa (conyuge) failed: ");
 				$Errores['titular_completa']++;
 				echoif("\n\n");
 			}  else {
@@ -418,7 +498,6 @@ if ($nRows_titulares > 0) {
 		}
 		
 		/* INSERT naf_completo */
-		
 		$ins_naf_completo = " insert into naf_completo (version, titular1_id, titular2_id ) ";
 		if (!$SINCONYUGE) {
 			$ins_naf_completo .= " values ('0', ".$id_tit_completa_tit.", ".$id_tit_completa_cy.")";
@@ -428,7 +507,7 @@ if ($nRows_titulares > 0) {
 		echoif("naf_completo\n");
 		echoif($ins_naf_completo."\n");
 		if (!$Tconn->query($ins_naf_completo)) {
-			pdberror($Tconn, "INSERT naf_completo failed: ");
+			pdberror($Tconn, $ins_naf_completo."\n"."INSERT naf_completo failed: ");
 			$Errores['naf_completo']++;
 			echoif("\n\n");
 		} else {    
@@ -446,7 +525,7 @@ if ($nRows_titulares > 0) {
 		echoif("naf_completo_integrante\n");
 		echoif($ins_naf_completo_integrante."\n");
 		if (!$Tconn->query($ins_naf_completo_integrante)) {
-			pdberror($Tconn, "INSERT naf_completo_integrante failed: ");
+			pdberror($Tconn, $ins_naf_completo_integrante."\n"."INSERT naf_completo_integrante failed: ");
 			$Errores['naf_completo_integrante']++;
 			echoif("\n\n");
 		}
@@ -473,7 +552,7 @@ if ($nRows_titulares > 0) {
 		echoif($ins_domicilio."\n");
 		$id_domicilio = 0;
 		if (!$Tconn->query($ins_domicilio)) {
-			pdberror($Tconn, "INSERT domicilio (persona) failed: ");
+			pdberror($Tconn, $ins_domicilio."\n"."INSERT domicilio (persona) failed: ");
 			$Errores['domicilio']++;
 			echoif("\n\n");
 		} else {    
@@ -500,7 +579,7 @@ if ($nRows_titulares > 0) {
 		echoif($ins_domicilio."\n");
 		$id_domicilio_prod = 0;
 		if (!$Tconn->query($ins_domicilio)) {
-			pdberror($Tconn, "INSERT domicilio (produccion) failed: ");
+			pdberror($Tconn, $ins_domicilio."\n"."INSERT domicilio (produccion) failed: ");
 			$Errores['domicilio']++;
 			echoif("\n\n");
 		} else {    
@@ -540,7 +619,7 @@ if ($nRows_titulares > 0) {
 		echoif("actividad_completa\n");
 		echoif($ins_actividad_completa."\n");
 		if (!$Tconn->query($ins_actividad_completa)) {
-			pdberror($Tconn, "INSERT actividad_completa failed: ");
+			pdberror($Tconn, $ins_actividad_completa."\n"."INSERT actividad_completa failed: ");
 			$Errores['actividad_completa']++;
 			echoif("\n\n");
 		} else {    
@@ -568,7 +647,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_complementaria (alquilaTierra)\n");
 			echoif($ins_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_complementaria (alquilaTierra) failed: ");
+				pdberror($Tconn, $ins_actividad_complementaria."\n"."INSERT actividad_complementaria (alquilaTierra) failed: ");
 				$Errores['actividad_complementaria']++;
 				echoif("\n\n");
 			} else {    
@@ -584,7 +663,7 @@ if ($nRows_titulares > 0) {
 			echoif("upd actividad_complementaria (superficie alquilaTierra)\n");
 			echoif($upd_actividad_complementaria."\n");
 			if (!$Tconn->query($upd_actividad_complementaria)) {
-				pdberror($Tconn, "UPDATE actividad_complementaria (superficie alquilaTierra) failed: ");
+				pdberror($Tconn, $upd_actividad_complementaria."\n"."UPDATE actividad_complementaria (superficie alquilaTierra) failed: ");
 				$Errores['actividad_complementaria']++;
 				echoif("\n\n");
 			}
@@ -595,7 +674,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_complementaria (alquilaTierra)\n");
 			echoif($ins_actividad_completa_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (alquilaTierra) failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_complementaria."\n"."INSERT actividad_completa_actividad_complementaria (alquilaTierra) failed: ");
 				$Errores['actividad_completa_actividad_complementaria']++;
 				echoif("\n\n");
 			}
@@ -607,7 +686,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_complementaria (ServVtaFuerzaTrab)\n");
 			echoif($ins_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_complementaria (ServVtaFuerzaTrab) failed: ");
+				pdberror($Tconn, $ins_actividad_complementaria."\n"."INSERT actividad_complementaria (ServVtaFuerzaTrab) failed: ");
 				$Errores['actividad_complementaria']++;
 				echoif("\n\n");
 			} else {    
@@ -620,7 +699,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_complementaria (ServVtaFuerzaTrab)\n");
 			echoif($ins_actividad_completa_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServVtaFuerzaTrab) failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_complementaria."\n"."INSERT actividad_completa_actividad_complementaria (ServVtaFuerzaTrab) failed: ");
 				$Errores['actividad_completa_actividad_complementaria']++;
 				echoif("\n\n");
 			}
@@ -632,7 +711,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_complementaria (ServVtaFuerzaTrabEv)\n");
 			echoif($ins_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_complementaria (ServVtaFuerzaTrabEv) failed: ");
+				pdberror($Tconn, $ins_actividad_complementaria."\n"."INSERT actividad_complementaria (ServVtaFuerzaTrabEv) failed: ");
 				$Errores['actividad_complementaria']++;
 				echoif("\n\n");
 			} else {    
@@ -645,7 +724,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_complementaria (ServVtaFuerzaTrabEv)\n");
 			echoif($ins_actividad_completa_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServVtaFuerzaTrabEv) failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_complementaria."\n"."INSERT actividad_completa_actividad_complementaria (ServVtaFuerzaTrabEv) failed: ");
 				$Errores['actividad_completa_actividad_complementaria']++;
 				echoif("\n\n");
 			}
@@ -657,7 +736,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_complementaria (ServUsoANimales)\n");
 			echoif($ins_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_complementaria (ServUsoANimales) failed: ");
+				pdberror($Tconn, $ins_actividad_complementaria."\n"."INSERT actividad_complementaria (ServUsoANimales) failed: ");
 				$Errores['actividad_complementaria']++;
 				echoif("\n\n");
 			} else {    
@@ -670,7 +749,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_complementaria (ServUsoANimales)\n");
 			echoif($ins_actividad_completa_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServUsoANimales) failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_complementaria."\n"."INSERT actividad_completa_actividad_complementaria (ServUsoANimales) failed: ");
 				$Errores['actividad_completa_actividad_complementaria']++;
 				echoif("\n\n");
 			}
@@ -682,7 +761,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_complementaria (ServUsoMaquinarias)\n");
 			echoif($ins_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_complementaria (ServUsoMaquinarias) failed: ");
+				pdberror($Tconn, $ins_actividad_complementaria."\n"."INSERT actividad_complementaria (ServUsoMaquinarias) failed: ");
 				$Errores['actividad_complementaria']++;
 				echoif("\n\n");
 			} else {    
@@ -695,7 +774,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_complementaria (ServUsoMaquinarias)\n");
 			echoif($ins_actividad_completa_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServUsoMaquinarias) failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_complementaria."\n"."INSERT actividad_completa_actividad_complementaria (ServUsoMaquinarias) failed: ");
 				$Errores['actividad_completa_actividad_complementaria']++;
 				echoif("\n\n");
 			}
@@ -707,7 +786,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_complementaria (ServComercializacion)\n");
 			echoif($ins_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_complementaria (ServComercializacion) failed: ");
+				pdberror($Tconn, $ins_actividad_complementaria."\n"."INSERT actividad_complementaria (ServComercializacion) failed: ");
 				$Errores['actividad_complementaria']++;
 				echoif("\n\n");
 			} else {    
@@ -720,7 +799,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_complementaria (ServComercializacion)\n");
 			echoif($ins_actividad_completa_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServComercializacion) failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_complementaria."\n"."INSERT actividad_completa_actividad_complementaria (ServComercializacion) failed: ");
 				$Errores['actividad_completa_actividad_complementaria']++;
 				echoif("\n\n");
 			}
@@ -732,7 +811,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_complementaria (ServTransporte)\n");
 			echoif($ins_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_complementaria (ServTransporte) failed: ");
+				pdberror($Tconn, $ins_actividad_complementaria."\n"."INSERT actividad_complementaria (ServTransporte) failed: ");
 				$Errores['actividad_complementaria']++;
 				echoif("\n\n");
 			} else {    
@@ -745,7 +824,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_complementaria (ServTransporte)\n");
 			echoif($ins_actividad_completa_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServTransporte) failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_complementaria."\n"."INSERT actividad_completa_actividad_complementaria (ServTransporte) failed: ");
 				$Errores['actividad_completa_actividad_complementaria']++;
 				echoif("\n\n");
 			}
@@ -757,7 +836,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_complementaria (ServTurismo)\n");
 			echoif($ins_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_complementaria (ServTurismo) failed: ");
+				pdberror($Tconn, $ins_actividad_complementaria."\n"."INSERT actividad_complementaria (ServTurismo) failed: ");
 				$Errores['actividad_complementaria']++;
 				echoif("\n\n");
 			} else {    
@@ -770,7 +849,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_complementaria (ServTurismo)\n");
 			echoif($ins_actividad_completa_actividad_complementaria."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_complementaria)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_complementaria (ServTurismo) failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_complementaria."\n"."INSERT actividad_completa_actividad_complementaria (ServTurismo) failed: ");
 				$Errores['actividad_completa_actividad_complementaria']++;
 				echoif("\n\n");
 			}
@@ -788,7 +867,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_principal actPrincipalAgricultura\n");
 			echoif($ins_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_principal actPrincipalAgricultura failed: ");
+				pdberror($Tconn, $ins_actividad_principal."\n"."INSERT actividad_principal actPrincipalAgricultura failed: ");
 				$Errores['actividad_principal']++;
 				echoif("\n\n");
 			} else {    
@@ -801,7 +880,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_principal (actPrincipalAgricultura)\n");
 			echoif($ins_actividad_completa_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_principal actPrincipalAgricultura failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_principal."\n"."INSERT actividad_completa_actividad_principal actPrincipalAgricultura failed: ");
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
@@ -817,7 +896,7 @@ if ($nRows_titulares > 0) {
 					echoif("act_produccion\n");
 					echoif($ins_act_produccion."\n");
 					if (!$Tconn->query($ins_act_produccion)) {
-						pdberror($Tconn, "INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
+						pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
 					} else {    
 						$id_act_produccion = $Tconn->insert_id;
 						echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -830,7 +909,7 @@ if ($nRows_titulares > 0) {
 					echoif("act_agricultura_detalle\n");
 					echoif($ins_act_agricultura_detalle."\n");
 					if (!$Tconn->query($ins_act_agricultura_detalle)) {
-						pdberror($Tconn, "INSERT act_agricultura_detalle failed: ");
+						pdberror($Tconn, $ins_act_agricultura_detalle."\n"."INSERT act_agricultura_detalle failed: ");
 						$Errores['act_agricultura_detalle']++;
 						echoif("\n\n");
 					} else {    
@@ -843,7 +922,7 @@ if ($nRows_titulares > 0) {
 					echoif("act_agricultura_act_agricultura_detalle\n");
 					echoif($ins_act_agricultura_act_agricultura_detalle."\n");
 					if (!$Tconn->query($ins_act_agricultura_act_agricultura_detalle)) {
-						pdberror($Tconn, "INSERT act_agricultura_act_agricultura_detalle failed: ");
+						pdberror($Tconn, $ins_act_agricultura_act_agricultura_detalle."\n"."INSERT act_agricultura_act_agricultura_detalle failed: ");
 						$Errores['act_agricultura_act_agricultura_detalle']++;
 						echoif("\n\n");
 					}
@@ -860,7 +939,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_principal actPrincipalAgroindustria\n");
 			echoif($ins_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_principal actPrincipalAgroindustria failed: ");
+				pdberror($Tconn, $ins_actividad_principal."\n"."INSERT actividad_principal actPrincipalAgroindustria failed: ");
 				$Errores['actividad_principal']++;
 				echoif("\n\n");
 			} else {    
@@ -873,7 +952,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_principal (actPrincipalAgroindustria)\n");
 			echoif($ins_actividad_completa_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_principal actPrincipalAgroindustria failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_principal."\n"."INSERT actividad_completa_actividad_principal actPrincipalAgroindustria failed: ");
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
@@ -889,7 +968,7 @@ if ($nRows_titulares > 0) {
 					echoif("act_produccion\n");
 					echoif($ins_act_produccion."\n");
 					if (!$Tconn->query($ins_act_produccion)) {
-						pdberror($Tconn, "INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
+						pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
 					} else {    
 						$id_act_produccion = $Tconn->insert_id;
 						echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -900,7 +979,7 @@ if ($nRows_titulares > 0) {
 					echoif("act_agroindustria_detalle\n");
 					echoif($ins_act_agroindustria_detalle."\n");
 					if (!$Tconn->query($ins_act_agroindustria_detalle)) {
-						pdberror($Tconn, "INSERT act_agroindustria_detalle failed: ");
+						pdberror($Tconn, $ins_act_agroindustria_detalle."\n"."INSERT act_agroindustria_detalle failed: ");
 						$Errores['act_agroindustria_detalle']++;
 						echoif("\n\n");
 					} else {    
@@ -913,7 +992,7 @@ if ($nRows_titulares > 0) {
 					echoif("act_agroindustria_act_agroindustria_detalle\n");
 					echoif($ins_act_agroindustria_act_agroindustria_detalle."\n");
 					if (!$Tconn->query($ins_act_agroindustria_act_agroindustria_detalle)) {
-						pdberror($Tconn, "INSERT act_agroindustria_act_agroindustria_detalle failed: ");
+						pdberror($Tconn, $ins_act_agroindustria_act_agroindustria_detalle."\n"."INSERT act_agroindustria_act_agroindustria_detalle failed: ");
 						$Errores['act_agroindustria_act_agroindustria_detalle']++;
 						echoif("\n\n");
 					}
@@ -930,7 +1009,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_principal actPrincipalApicultura\n");
 			echoif($ins_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_principal actPrincipalApicultura failed: ");
+				pdberror($Tconn, $ins_actividad_principal."\n"."INSERT actividad_principal actPrincipalApicultura failed: ");
 				$Errores['actividad_principal']++;
 				echoif("\n\n");
 			} else {    
@@ -943,7 +1022,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_principal (actPrincipalApicultura)\n");
 			echoif($ins_actividad_completa_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_principal actPrincipalApicultura failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_principal."\n"."INSERT actividad_completa_actividad_principal actPrincipalApicultura failed: ");
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
@@ -955,7 +1034,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_produccion MIEL\n");
 			echoif($ins_act_produccion."\n");
 			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion MIEL failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion MIEL failed: ");$Errores['act_produccion']++;echoif("\n\n");
 			} else {    
 				$id_act_produccion = $Tconn->insert_id;
 				echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -966,7 +1045,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_apicultura_detalle\n");
 			echoif($ins_act_apicultura_detalle."\n");
 			if (!$Tconn->query($ins_act_apicultura_detalle)) {
-				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				pdberror($Tconn, $ins_act_apicultura_detalle."\n"."INSERT act_apicultura_detalle failed: ");
 				$Errores['act_apicultura_detalle']++;
 				echoif("\n\n");
 			} else {    
@@ -990,7 +1069,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_produccion CERA\n");
 			echoif($ins_act_produccion."\n");
 			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion CERA failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion CERA failed: ");$Errores['act_produccion']++;echoif("\n\n");
 			} else {    
 				$id_act_produccion = $Tconn->insert_id;
 				echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1001,7 +1080,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_apicultura_detalle\n");
 			echoif($ins_act_apicultura_detalle."\n");
 			if (!$Tconn->query($ins_act_apicultura_detalle)) {
-				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				pdberror($Tconn, $ins_act_apicultura_detalle."\n"."INSERT act_apicultura_detalle failed: ");
 				$Errores['act_apicultura_detalle']++;
 				echoif("\n\n");
 			} else {    
@@ -1025,7 +1104,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_produccion PROPOLEO\n");
 			echoif($ins_act_produccion."\n");
 			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion PROPOLEO failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion PROPOLEO failed: ");$Errores['act_produccion']++;echoif("\n\n");
 			} else {    
 				$id_act_produccion = $Tconn->insert_id;
 				echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1036,7 +1115,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_apicultura_detalle\n");
 			echoif($ins_act_apicultura_detalle."\n");
 			if (!$Tconn->query($ins_act_apicultura_detalle)) {
-				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				pdberror($Tconn, $ins_act_apicultura_detalle."\n"."INSERT act_apicultura_detalle failed: ");
 				$Errores['act_apicultura_detalle']++;
 				echoif("\n\n");
 			} else {    
@@ -1060,7 +1139,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_produccion JALEA\n");
 			echoif($ins_act_produccion."\n");
 			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion JALEA failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion JALEA failed: ");$Errores['act_produccion']++;echoif("\n\n");
 			} else {    
 				$id_act_produccion = $Tconn->insert_id;
 				echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1071,7 +1150,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_apicultura_detalle\n");
 			echoif($ins_act_apicultura_detalle."\n");
 			if (!$Tconn->query($ins_act_apicultura_detalle)) {
-				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				pdberror($Tconn, $ins_act_apicultura_detalle."\n"."INSERT act_apicultura_detalle failed: ");
 				$Errores['act_apicultura_detalle']++;
 				echoif("\n\n");
 			} else {    
@@ -1095,7 +1174,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_produccion POLEN\n");
 			echoif($ins_act_produccion."\n");
 			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion POLEN failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion POLEN failed: ");$Errores['act_produccion']++;echoif("\n\n");
 			} else {    
 				$id_act_produccion = $Tconn->insert_id;
 				echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1106,7 +1185,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_apicultura_detalle\n");
 			echoif($ins_act_apicultura_detalle."\n");
 			if (!$Tconn->query($ins_act_apicultura_detalle)) {
-				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				pdberror($Tconn, $ins_act_apicultura_detalle."\n"."INSERT act_apicultura_detalle failed: ");
 				$Errores['act_apicultura_detalle']++;
 				echoif("\n\n");
 			} else {    
@@ -1130,7 +1209,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_produccion NUCLEOS\n");
 			echoif($ins_act_produccion."\n");
 			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion NUCLEOS failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion NUCLEOS failed: ");$Errores['act_produccion']++;echoif("\n\n");
 			} else {    
 				$id_act_produccion = $Tconn->insert_id;
 				echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1141,7 +1220,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_apicultura_detalle\n");
 			echoif($ins_act_apicultura_detalle."\n");
 			if (!$Tconn->query($ins_act_apicultura_detalle)) {
-				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				pdberror($Tconn, $ins_act_apicultura_detalle."\n"."INSERT act_apicultura_detalle failed: ");
 				$Errores['act_apicultura_detalle']++;
 				echoif("\n\n");
 			} else {    
@@ -1161,11 +1240,11 @@ if ($nRows_titulares > 0) {
 			/* REINAS */
 			/* act_produccion */
 			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
-			$ins_act_produccion .= " values (0, '".trim($row_tit['PAApiculturaMaterialVivoCanal'])."', ".$row_tit['PAApiculturaMaterialVivoAutoConsumo'].", ".$row_tit['PAApiculturaMaterialVivoMercado'].", ".$row_tit['PAApiculturaMaterialVivoIntercambio'].", ".$row_tit['PAApiculturaMaterialVivoPrecioUnitario'].", ".$row_tit['PAApiculturaMaterialVivoVolumen'].", ".$row_tit['PAApiculturaMaterialVivoUnidades'].", '".$row_tit['PAApiculturaMaterialVivoExplotacion']."' )";
+			$ins_act_produccion .= " values (0, '".trim($row_tit['PAApiculturaMaterialVicoCanal'])."', ".$row_tit['PAApiculturaMaterialVivoAutoConsumo'].", ".$row_tit['PAApiculturaMaterialVivoMercado'].", ".$row_tit['PAApiculturaMaterialVivoIntercambio'].", ".$row_tit['PAApiculturaMaterialVivoPrecioUnitario'].", ".$row_tit['PAApiculturaMaterialVivoVolumen'].", ".$row_tit['PAApiculturaMaterialVivoUnidades'].", '".$row_tit['PAApiculturaMaterialVivoExplotacion']."' )";
 			echoif("act_produccion REINAS\n");
 			echoif($ins_act_produccion."\n");
 			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion REINAS failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion REINAS failed: ");$Errores['act_produccion']++;echoif("\n\n");
 			} else {    
 				$id_act_produccion = $Tconn->insert_id;
 				echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1176,7 +1255,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_apicultura_detalle\n");
 			echoif($ins_act_apicultura_detalle."\n");
 			if (!$Tconn->query($ins_act_apicultura_detalle)) {
-				pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+				pdberror($Tconn, $ins_act_apicultura_detalle."\n"."INSERT act_apicultura_detalle failed: ");
 				$Errores['act_apicultura_detalle']++;
 				echoif("\n\n");
 			} else {    
@@ -1203,7 +1282,7 @@ if ($nRows_titulares > 0) {
 				echoif("act_produccion OTRO\n");
 				echoif($ins_act_produccion."\n");
 				if (!$Tconn->query($ins_act_produccion)) {
-					pdberror($Tconn, "INSERT act_produccion OTRO failed: ");$Errores['act_produccion']++;echoif("\n\n");
+					pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion OTRO failed: ");$Errores['act_produccion']++;echoif("\n\n");
 				} else {    
 					$id_act_produccion = $Tconn->insert_id;
 					echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1214,7 +1293,7 @@ if ($nRows_titulares > 0) {
 				echoif("act_apicultura_detalle\n");
 				echoif($ins_act_apicultura_detalle."\n");
 				if (!$Tconn->query($ins_act_apicultura_detalle)) {
-					pdberror($Tconn, "INSERT act_apicultura_detalle failed: ");
+					pdberror($Tconn, $ins_act_apicultura_detalle."\n"."INSERT act_apicultura_detalle failed: ");
 					$Errores['act_apicultura_detalle']++;
 					echoif("\n\n");
 				} else {    
@@ -1243,7 +1322,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_principal actPrincipalArtesania\n");
 			echoif($ins_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_principal actPrincipalArtesania failed: ");
+				pdberror($Tconn, $ins_actividad_principal."\n"."INSERT actividad_principal actPrincipalArtesania failed: ");
 				$Errores['actividad_principal']++;
 				echoif("\n\n");
 			} else {    
@@ -1256,7 +1335,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_principal (actPrincipalArtesania)\n");
 			echoif($ins_actividad_completa_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_principal actPrincipalArtesania failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_principal."\n"."INSERT actividad_completa_actividad_principal actPrincipalArtesania failed: ");
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
@@ -1272,7 +1351,7 @@ if ($nRows_titulares > 0) {
 					echoif("act_produccion\n");
 					echoif($ins_act_produccion."\n");
 					if (!$Tconn->query($ins_act_produccion)) {
-						pdberror($Tconn, "INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
+						pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
 					} else {    
 						$id_act_produccion = $Tconn->insert_id;
 						echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1313,7 +1392,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_principal actPrincipalCaza\n");
 			echoif($ins_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_principal actPrincipalCaza failed: ");
+				pdberror($Tconn, $ins_actividad_principal."\n"."INSERT actividad_principal actPrincipalCaza failed: ");
 				$Errores['actividad_principal']++;
 				echoif("\n\n");
 			} else {    
@@ -1326,7 +1405,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_principal (actPrincipalCaza)\n");
 			echoif($ins_actividad_completa_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_principal actPrincipalCaza failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_principal."\n"."INSERT actividad_completa_actividad_principal actPrincipalCaza failed: ");
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
@@ -1338,7 +1417,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_produccion CARNE\n");
 			echoif($ins_act_produccion."\n");
 			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion CARNE failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion CARNE failed: ");$Errores['act_produccion']++;echoif("\n\n");
 			} else {    
 				$id_act_produccion = $Tconn->insert_id;
 				echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1373,7 +1452,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_produccion CUERO/PIELES\n");
 			echoif($ins_act_produccion."\n");
 			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion CUERO/PIELES failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion CUERO/PIELES failed: ");$Errores['act_produccion']++;echoif("\n\n");
 			} else {    
 				$id_act_produccion = $Tconn->insert_id;
 				echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1408,7 +1487,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_produccion OTRO\n");
 			echoif($ins_act_produccion."\n");
 			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion OTRO failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion OTRO failed: ");$Errores['act_produccion']++;echoif("\n\n");
 			} else {    
 				$id_act_produccion = $Tconn->insert_id;
 				echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1447,7 +1526,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_principal actPrincipalPesca\n");
 			echoif($ins_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_principal actPrincipalPesca failed: ");
+				pdberror($Tconn, $ins_actividad_principal."\n"."INSERT actividad_principal actPrincipalPesca failed: ");
 				$Errores['actividad_principal']++;
 				echoif("\n\n");
 			} else {    
@@ -1460,115 +1539,129 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_principal (actPrincipalPesca)\n");
 			echoif($ins_actividad_completa_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_principal actPrincipalPesca failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_principal."\n"."INSERT actividad_completa_actividad_principal actPrincipalPesca failed: ");
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
 			/* act_pesca_detalle   rel   act_pesca_act_pesca_detalle */
 			/* CRIADERO */
-			/* act_produccion */
-			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
-			$ins_act_produccion .= " values (0, '".trim($row_tit['PAPescaCriaderoCanal'])."', ".$row_tit['PAPescaCriaderoAutoConsumo'].", ".$row_tit['PAPescaCriaderoMercado'].", ".$row_tit['PAPescaCriaderoIntercambio'].", ".$row_tit['PAPescaCriaderoPrecio'].", ".$row_tit['PAPescaCriaderoVolumen'].", ".$row_tit['PAPescaCriaderoUnidad'].", '".$row_tit['PAPescaCriaderoExplotacion']."' )";
-			echoif("act_produccion CRIADERO\n");
-			echoif($ins_act_produccion."\n");
-			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion CRIADERO failed: ");$Errores['act_produccion']++;echoif("\n\n");
-			} else {    
-				$id_act_produccion = $Tconn->insert_id;
-				echoif(" id act_produccion :".$id_act_produccion."\n");
-			}
-			/* act_pesca_detalle */ 
-			$ins_act_pesca_detalle = " insert into act_pesca_detalle (version, codigo, descripcion, produccion_id, sistema, tipo) ";
-			$ins_act_pesca_detalle .= " values (0,  '101', 'CRIADERO', ".$id_act_produccion.", 'CRIADERO', ".$row_tit['PAPescaCriaderoTipo'].")";
-			echoif("act_pesca_detalle\n");
-			echoif($ins_act_pesca_detalle."\n");
-			if (!$Tconn->query($ins_act_pesca_detalle)) {
-				pdberror($Tconn, "INSERT act_pesca_detalle CRIADERO failed: ");
-				$Errores['act_pesca_detalle']++;
-				echoif("\n\n");
-			} else {    
-				$id_act_pesca_detalle = $Tconn->insert_id;
-				echoif(" id act_pesca_detalle CRIADERO:".$id_act_pesca_detalle."\n");
-			}
-			/* act_pesca_act_pesca_detalle */
-			$ins_act_pesca_act_pesca_detalle = " insert into act_pesca_act_pesca_detalle (act_pesca_detalles_id, act_pesca_detalle_id) ";
-			$ins_act_pesca_act_pesca_detalle .= " values (".$id_actividad_principal.", ".$id_act_pesca_detalle." )";
-			echoif("act_pesca_act_pesca_detalle\n");
-			echoif($ins_act_pesca_act_pesca_detalle."\n");
-			if (!$Tconn->query($ins_act_pesca_act_pesca_detalle)) {
-				pdberror($Tconn, "INSERT act_pesca_act_pesca_detalle CRIADERO failed: ");
-				$Errores['act_pesca_act_pesca_detalle']++;
-				echoif("\n\n");
+			if (! empty($row_tit['PAPescaCriaderoVolumen']) && 
+				  empty($row_tit['PAPescaCriaderoUnidad']) &&
+				  empty($row_tit['PAPescaCriaderoAutoConsumo']) ) {
+						
+				/* act_produccion */
+				$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+				$ins_act_produccion .= " values (0, '".trim($row_tit['PAPescaCriaderoCanal'])."', ".$row_tit['PAPescaCriaderoAutoConsumo'].", ".$row_tit['PAPescaCriaderoMercado'].", ".$row_tit['PAPescaCriaderoIntercambio'].", ".$row_tit['PAPescaCriaderoPrecio'].", ".$row_tit['PAPescaCriaderoVolumen'].", ".$row_tit['PAPescaCriaderoUnidad'].", '".$row_tit['PAPescaCriaderoExplotacion']."' )";
+				echoif("act_produccion CRIADERO\n");
+				echoif($ins_act_produccion."\n");
+				if (!$Tconn->query($ins_act_produccion)) {
+					pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion CRIADERO failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				} else {    
+					$id_act_produccion = $Tconn->insert_id;
+					echoif(" id act_produccion :".$id_act_produccion."\n");
+				}
+				/* act_pesca_detalle */ 
+				$ins_act_pesca_detalle = " insert into act_pesca_detalle (version, codigo, descripcion, produccion_id, sistema, tipo) ";
+				$ins_act_pesca_detalle .= " values (0,  '101', 'CRIADERO', ".$id_act_produccion.", 'CRIADERO', ".$row_tit['PAPescaCriaderoTipo'].")";
+				echoif("act_pesca_detalle\n");
+				echoif($ins_act_pesca_detalle."\n");
+				if (!$Tconn->query($ins_act_pesca_detalle)) {
+					pdberror($Tconn, "INSERT act_pesca_detalle CRIADERO failed: ");
+					$Errores['act_pesca_detalle']++;
+					echoif("\n\n");
+				} else {    
+					$id_act_pesca_detalle = $Tconn->insert_id;
+					echoif(" id act_pesca_detalle CRIADERO:".$id_act_pesca_detalle."\n");
+				}
+				/* act_pesca_act_pesca_detalle */
+				$ins_act_pesca_act_pesca_detalle = " insert into act_pesca_act_pesca_detalle (act_pesca_detalles_id, act_pesca_detalle_id) ";
+				$ins_act_pesca_act_pesca_detalle .= " values (".$id_actividad_principal.", ".$id_act_pesca_detalle." )";
+				echoif("act_pesca_act_pesca_detalle\n");
+				echoif($ins_act_pesca_act_pesca_detalle."\n");
+				if (!$Tconn->query($ins_act_pesca_act_pesca_detalle)) {
+					pdberror($Tconn, "INSERT act_pesca_act_pesca_detalle CRIADERO failed: ");
+					$Errores['act_pesca_act_pesca_detalle']++;
+					echoif("\n\n");
+				}
 			}
 			/* RECOLECCION */
-			/* act_produccion */
-			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )";
-			$ins_act_produccion .= " values (0, '".trim($row_tit['PAPescaRecoleccionCanal'])."', ".$row_tit['PAPescaRecoleccionAutoConsumo'].", ".$row_tit['PAPescaRecoleccionMercado'].", ".$row_tit['PAPescaRecoleccionIntercambio'] . ", " . $row_tit['PAPescaRecoleccionPrecio'] . ", ".$row_tit['PAPescaRecoleccionVolumen'] . ", ".$row_tit['PAPescaRecoleccionUnidad'].", '". $row_tit['PAPescaRecoleccionExplotacion']."' )"; 
-			echoif("act_produccion RECOLECCION\n");
-			echoif($ins_act_produccion."\n");
-			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion RECOLECCION failed: ");$Errores['act_produccion']++;echoif("\n\n");
-			} else {    
-				$id_act_produccion = $Tconn->insert_id;
-				echoif(" id act_produccion :".$id_act_produccion."\n");
-			}
-			/* act_pesca_detalle */ 
-			$ins_act_pesca_detalle = " insert into act_pesca_detalle (version, codigo, descripcion, produccion_id, sistema, tipo) ";
-			$ins_act_pesca_detalle .= " values (0,  '102', 'RECOLECCION', ".$id_act_produccion.", 'RECOLECCION', ".$row_tit['PAPescaRecoleccionTipo'].")";
-			echoif("act_pesca_detalle\n");
-			echoif($ins_act_pesca_detalle."\n");
-			if (!$Tconn->query($ins_act_pesca_detalle)) {
-				pdberror($Tconn, "INSERT act_pesca_detalle RECOLECCION failed: ");
-				$Errores['act_pesca_detalle']++;
-				echoif("\n\n");
-			} else {    
-				$id_act_pesca_detalle = $Tconn->insert_id;
-				echoif(" id act_pesca_detalle RECOLECCION:".$id_act_pesca_detalle."\n");
-			}
-			/* act_pesca_act_pesca_detalle */
-			$ins_act_pesca_act_pesca_detalle = " insert into act_pesca_act_pesca_detalle (act_pesca_detalles_id, act_pesca_detalle_id) ";
-			$ins_act_pesca_act_pesca_detalle .= " values (".$id_actividad_principal.", ".$id_act_pesca_detalle." )";
-			echoif("act_pesca_act_pesca_detalle\n");
-			echoif($ins_act_pesca_act_pesca_detalle."\n");
-			if (!$Tconn->query($ins_act_pesca_act_pesca_detalle)) {
-				pdberror($Tconn, "INSERT act_pesca_act_pesca_detalle RECOLECCION failed: ");
-				$Errores['act_pesca_act_pesca_detalle']++;
-				echoif("\n\n");
+			if (! empty($row_tit['PAPescaRecoleccionVolumen']) && 
+				  empty($row_tit['PAPescaRecoleccionUnidad']) &&
+				  empty($row_tit['PAPescaRecoleccionAutoConsumo']) ) {
+						/* act_produccion */
+				$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )";
+				$ins_act_produccion .= " values (0, '".trim($row_tit['PAPescaRecoleccionCanal'])."', ".$row_tit['PAPescaRecoleccionAutoConsumo'].", ".$row_tit['PAPescaRecoleccionMercado'].", ".$row_tit['PAPescaRecoleccionIntercambio'] . ", " . $row_tit['PAPescaRecoleccionPrecio'] . ", ".$row_tit['PAPescaRecoleccionVolumen'] . ", ".$row_tit['PAPescaRecoleccionUnidad'].", '". $row_tit['PAPescaRecoleccionExplotacion']."' )"; 
+				echoif("act_produccion RECOLECCION\n");
+				echoif($ins_act_produccion."\n");
+				if (!$Tconn->query($ins_act_produccion)) {
+					pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion RECOLECCION failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				} else {    
+					$id_act_produccion = $Tconn->insert_id;
+					echoif(" id act_produccion :".$id_act_produccion."\n");
+				}
+				/* act_pesca_detalle */ 
+				$ins_act_pesca_detalle = " insert into act_pesca_detalle (version, codigo, descripcion, produccion_id, sistema, tipo) ";
+				$ins_act_pesca_detalle .= " values (0,  '102', 'RECOLECCION', ".$id_act_produccion.", 'RECOLECCION', ".$row_tit['PAPescaRecoleccionTipo'].")";
+				echoif("act_pesca_detalle\n");
+				echoif($ins_act_pesca_detalle."\n");
+				if (!$Tconn->query($ins_act_pesca_detalle)) {
+					pdberror($Tconn, "INSERT act_pesca_detalle RECOLECCION failed: ");
+					$Errores['act_pesca_detalle']++;
+					echoif("\n\n");
+				} else {    
+					$id_act_pesca_detalle = $Tconn->insert_id;
+					echoif(" id act_pesca_detalle RECOLECCION:".$id_act_pesca_detalle."\n");
+				}
+				/* act_pesca_act_pesca_detalle */
+				$ins_act_pesca_act_pesca_detalle = " insert into act_pesca_act_pesca_detalle (act_pesca_detalles_id, act_pesca_detalle_id) ";
+				$ins_act_pesca_act_pesca_detalle .= " values (".$id_actividad_principal.", ".$id_act_pesca_detalle." )";
+				echoif("act_pesca_act_pesca_detalle\n");
+				echoif($ins_act_pesca_act_pesca_detalle."\n");
+				if (!$Tconn->query($ins_act_pesca_act_pesca_detalle)) {
+					pdberror($Tconn, "INSERT act_pesca_act_pesca_detalle RECOLECCION failed: ");
+					$Errores['act_pesca_act_pesca_detalle']++;
+					echoif("\n\n");
+				}
 			}
 			/* CAPTURA */
-			/* act_produccion */
-			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )";
-			$ins_act_produccion .= " values (0, '".trim($row_tit['PAPescaCapturaCanal'])."', ".$row_tit['PAPescaCapturaAutoConsumo'].", ".$row_tit['PAPescaCapturaMercado'].", ".$row_tit['PAPescaCapturaIntercambio'] . ", " . $row_tit['PAPescaCapturaPrecio'] . ", ".$row_tit['PAPescaCapturaVolumen'] . ", ".$row_tit['PAPescaCapturaUnidad'].", '". $row_tit['PAPescaCapturaExplotacion']."' )"; 
-			echoif("act_produccion CAPTURA\n");
-			echoif($ins_act_produccion."\n");
-			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion CAPTURA failed: ");$Errores['act_produccion']++;echoif("\n\n");
-			} else {    
-				$id_act_produccion = $Tconn->insert_id;
-				echoif(" id act_produccion :".$id_act_produccion."\n");
-			}
-			/* act_pesca_detalle */ 
-			$ins_act_pesca_detalle = " insert into act_pesca_detalle (version, codigo, descripcion, produccion_id, sistema, tipo) ";
-			$ins_act_pesca_detalle .= " values (0,  '103', 'CAPTURA', ".$id_act_produccion.", 'CAPTURA', ".$row_tit['PAPescaCapturaTipo'].")";
-			echoif("act_pesca_detalle\n");
-			echoif($ins_act_pesca_detalle."\n");
-			if (!$Tconn->query($ins_act_pesca_detalle)) {
-				pdberror($Tconn, "INSERT act_pesca_detalle CAPTURA failed: ");
-				$Errores['act_pesca_detalle']++;
-				echoif("\n\n");
-			} else {    
-				$id_act_pesca_detalle = $Tconn->insert_id;
-				echoif(" id act_pesca_detalle CAPTURA:".$id_act_pesca_detalle."\n");
-			}
-			/* act_pesca_act_pesca_detalle */
-			$ins_act_pesca_act_pesca_detalle = " insert into act_pesca_act_pesca_detalle (act_pesca_detalles_id, act_pesca_detalle_id) ";
-			$ins_act_pesca_act_pesca_detalle .= " values (".$id_actividad_principal.", ".$id_act_pesca_detalle." )";
-			echoif("act_pesca_act_pesca_detalle\n");
-			echoif($ins_act_pesca_act_pesca_detalle."\n");
-			if (!$Tconn->query($ins_act_pesca_act_pesca_detalle)) {
-				pdberror($Tconn, "INSERT act_pesca_act_pesca_detalle CAPTURA failed: ");
-				$Errores['act_pesca_act_pesca_detalle']++;
-				echoif("\n\n");
+			if (! empty($row_tit['PAPescaCapturaVolumen']) && 
+				  empty($row_tit['PAPescaCapturaUnidad']) &&
+				  empty($row_tit['PAPescaCapturaAutoConsumo']) ) {
+						
+				/* act_produccion */
+				$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )";
+				$ins_act_produccion .= " values (0, '".trim($row_tit['PAPescaCapturaCanal'])."', ".$row_tit['PAPescaCapturaAutoConsumo'].", ".$row_tit['PAPescaCapturaMercado'].", ".$row_tit['PAPescaCapturaIntercambio'] . ", " . $row_tit['PAPescaCapturaPrecio'] . ", ".$row_tit['PAPescaCapturaVolumen'] . ", ".$row_tit['PAPescaCapturaUnidad'].", '". $row_tit['PAPescaCapturaExplotacion']."' )"; 
+				echoif("act_produccion CAPTURA\n");
+				echoif($ins_act_produccion."\n");
+				if (!$Tconn->query($ins_act_produccion)) {
+					pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion CAPTURA failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				} else {    
+					$id_act_produccion = $Tconn->insert_id;
+					echoif(" id act_produccion :".$id_act_produccion."\n");
+				}
+				/* act_pesca_detalle */ 
+				$ins_act_pesca_detalle = " insert into act_pesca_detalle (version, codigo, descripcion, produccion_id, sistema, tipo) ";
+				$ins_act_pesca_detalle .= " values (0,  '103', 'CAPTURA', ".$id_act_produccion.", 'CAPTURA', ".$row_tit['PAPescaCapturaTipo'].")";
+				echoif("act_pesca_detalle\n");
+				echoif($ins_act_pesca_detalle."\n");
+				if (!$Tconn->query($ins_act_pesca_detalle)) {
+					pdberror($Tconn, "INSERT act_pesca_detalle CAPTURA failed: ");
+					$Errores['act_pesca_detalle']++;
+					echoif("\n\n");
+				} else {    
+					$id_act_pesca_detalle = $Tconn->insert_id;
+					echoif(" id act_pesca_detalle CAPTURA:".$id_act_pesca_detalle."\n");
+				}
+				/* act_pesca_act_pesca_detalle */
+				$ins_act_pesca_act_pesca_detalle = " insert into act_pesca_act_pesca_detalle (act_pesca_detalles_id, act_pesca_detalle_id) ";
+				$ins_act_pesca_act_pesca_detalle .= " values (".$id_actividad_principal.", ".$id_act_pesca_detalle." )";
+				echoif("act_pesca_act_pesca_detalle\n");
+				echoif($ins_act_pesca_act_pesca_detalle."\n");
+				if (!$Tconn->query($ins_act_pesca_act_pesca_detalle)) {
+					pdberror($Tconn, "INSERT act_pesca_act_pesca_detalle CAPTURA failed: ");
+					$Errores['act_pesca_act_pesca_detalle']++;
+					echoif("\n\n");
+				}
 			}
 		}
 
@@ -1581,7 +1674,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_principal actPrincipalRecoleccion\n");
 			echoif($ins_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_principal actPrincipalRecoleccion failed: ");
+				pdberror($Tconn, $ins_actividad_principal."\n"."INSERT actividad_principal actPrincipalRecoleccion failed: ");
 				$Errores['actividad_principal']++;
 				echoif("\n\n");
 			} else {    
@@ -1594,7 +1687,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_principal (actPrincipalRecoleccion)\n");
 			echoif($ins_actividad_completa_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_principal actPrincipalRecoleccion failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_principal."\n"."INSERT actividad_completa_actividad_principal actPrincipalRecoleccion failed: ");
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
@@ -1610,7 +1703,7 @@ if ($nRows_titulares > 0) {
 				echoif("act_produccion VEGETALES\n");
 				echoif($ins_act_produccion."\n");
 				if (!$Tconn->query($ins_act_produccion)) {
-					pdberror($Tconn, "INSERT act_produccion VEGETALES failed: ");$Errores['act_produccion']++;echoif("\n\n");
+					pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion VEGETALES failed: ");$Errores['act_produccion']++;echoif("\n\n");
 				} else {    
 					$id_act_produccion = $Tconn->insert_id;
 					echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1650,7 +1743,7 @@ if ($nRows_titulares > 0) {
 				echoif("act_produccion MINERALES\n");
 				echoif($ins_act_produccion."\n");
 				if (!$Tconn->query($ins_act_produccion)) {
-					pdberror($Tconn, "INSERT act_produccion MINERALES failed: ");$Errores['act_produccion']++;echoif("\n\n");
+					pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion MINERALES failed: ");$Errores['act_produccion']++;echoif("\n\n");
 				} else {    
 					$id_act_produccion = $Tconn->insert_id;
 					echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1690,7 +1783,7 @@ if ($nRows_titulares > 0) {
 				echoif("act_produccion HONGOS\n");
 				echoif($ins_act_produccion."\n");
 				if (!$Tconn->query($ins_act_produccion)) {
-					pdberror($Tconn, "INSERT act_produccion HONGOS failed: ");$Errores['act_produccion']++;echoif("\n\n");
+					pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion HONGOS failed: ");$Errores['act_produccion']++;echoif("\n\n");
 				} else {    
 					$id_act_produccion = $Tconn->insert_id;
 					echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1729,7 +1822,7 @@ if ($nRows_titulares > 0) {
 				echoif("act_produccion MIEL\n");
 				echoif($ins_act_produccion."\n");
 				if (!$Tconn->query($ins_act_produccion)) {
-					pdberror($Tconn, "INSERT act_produccion MIEL failed: ");$Errores['act_produccion']++;echoif("\n\n");
+					pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion MIEL failed: ");$Errores['act_produccion']++;echoif("\n\n");
 				} else {    
 					$id_act_produccion = $Tconn->insert_id;
 					echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1769,7 +1862,7 @@ if ($nRows_titulares > 0) {
 				echoif("act_produccion OTRO\n");
 				echoif($ins_act_produccion."\n");
 				if (!$Tconn->query($ins_act_produccion)) {
-					pdberror($Tconn, "INSERT act_produccion OTRO failed: ");$Errores['act_produccion']++;echoif("\n\n");
+					pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion OTRO failed: ");$Errores['act_produccion']++;echoif("\n\n");
 				} else {    
 					$id_act_produccion = $Tconn->insert_id;
 					echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1809,7 +1902,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_principal actPrincipalTurismoRural\n");
 			echoif($ins_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_principal actPrincipalTurismoRural failed: ");
+				pdberror($Tconn, $ins_actividad_principal."\n"."INSERT actividad_principal actPrincipalTurismoRural failed: ");
 				$Errores['actividad_principal']++;
 				echoif("\n\n");
 			} else {    
@@ -1822,7 +1915,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_principal (actPrincipalTurismoRural)\n");
 			echoif($ins_actividad_completa_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_principal actPrincipalTurismoRural failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_principal."\n"."INSERT actividad_completa_actividad_principal actPrincipalTurismoRural failed: ");
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
@@ -1834,7 +1927,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_produccion DENTRO DEL PREDIO\n");
 			echoif($ins_act_produccion."\n");
 			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion DENTRO DEL PREDIO failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion DENTRO DEL PREDIO failed: ");$Errores['act_produccion']++;echoif("\n\n");
 			} else {    
 				$id_act_produccion = $Tconn->insert_id;
 				echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1869,7 +1962,7 @@ if ($nRows_titulares > 0) {
 			echoif("act_produccion FUERA DEL PREDIO\n");
 			echoif($ins_act_produccion."\n");
 			if (!$Tconn->query($ins_act_produccion)) {
-				pdberror($Tconn, "INSERT act_produccion FUERA DEL PREDIO failed: ");$Errores['act_produccion']++;echoif("\n\n");
+				pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion FUERA DEL PREDIO failed: ");$Errores['act_produccion']++;echoif("\n\n");
 			} else {    
 				$id_act_produccion = $Tconn->insert_id;
 				echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1908,7 +2001,7 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_principal actPrincipalPastoreo\n");
 			echoif($ins_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_principal actPrincipalPastoreo failed: ");
+				pdberror($Tconn, $ins_actividad_principal."\n"."INSERT actividad_principal actPrincipalPastoreo failed: ");
 				$Errores['actividad_principal']++;
 				echoif("\n\n");
 			} else {    
@@ -1921,13 +2014,13 @@ if ($nRows_titulares > 0) {
 			echoif("actividad_completa_actividad_principal (actPrincipalPastoreo)\n");
 			echoif($ins_actividad_completa_actividad_principal."\n");
 			if (!$Tconn->query($ins_actividad_completa_actividad_principal)) {
-				pdberror($Tconn, "INSERT actividad_completa_actividad_principal actPrincipalPastoreo failed: ");
+				pdberror($Tconn, $ins_actividad_completa_actividad_principal."\n"."INSERT actividad_completa_actividad_principal actPrincipalPastoreo failed: ");
 				$Errores['actividad_completa_actividad_principal']++;
 				echoif("\n\n");
 			}
 			/* act_pastoreo_detalle   rel   act_pastoreo_act_pastoreo_detalle */
 			if ($nRows_pa > 0) {
-				$ar=0;
+				$pa=0;
 				while ($row_pa = mysqli_fetch_array($res_pa)) {
 					$pa++;
 					
@@ -1937,7 +2030,7 @@ if ($nRows_titulares > 0) {
 					echoif("act_produccion\n");
 					echoif($ins_act_produccion."\n");
 					if (!$Tconn->query($ins_act_produccion)) {
-						pdberror($Tconn, "INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
+						pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
 					} else {    
 						$id_act_produccion = $Tconn->insert_id;
 						echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -1948,7 +2041,7 @@ if ($nRows_titulares > 0) {
 					echoif("act_pastoreo_detalle\n");
 					echoif($ins_act_pastoreo_detalle."\n");
 					if (!$Tconn->query($ins_act_pastoreo_detalle)) {
-						pdberror($Tconn, "INSERT act_pastoreo_detalle failed: ");
+						pdberror($Tconn, $ins_act_pastoreo_detalle."\n"."INSERT act_pastoreo_detalle failed: ");
 						$Errores['act_pastoreo_detalle']++;
 						echoif("\n\n");
 					} else {    
@@ -1961,7 +2054,7 @@ if ($nRows_titulares > 0) {
 					echoif("act_pastoreo_act_pastoreo_detalle\n");
 					echoif($ins_act_pastoreo_act_pastoreo_detalle."\n");
 					if (!$Tconn->query($ins_act_pastoreo_act_pastoreo_detalle)) {
-						pdberror($Tconn, "INSERT act_pastoreo_act_pastoreo_detalle failed: ");
+						pdberror($Tconn, $ins_act_pastoreo_act_pastoreo_detalle."\n"."INSERT act_pastoreo_act_pastoreo_detalle failed: ");
 						$Errores['act_pastoreo_act_pastoreo_detalle']++;
 						echoif("\n\n");
 					}
@@ -1973,7 +2066,7 @@ if ($nRows_titulares > 0) {
 						echoif("sub_producto_animal subcodigo[".$row_pa['PASubCodigo']."]\n");
 						echoif($ins_sub_producto_animal."\n");
 						if (!$Tconn->query($ins_sub_producto_animal)) {
-							pdberror($Tconn, "INSERT sub_producto_animal failed: ");
+							pdberror($Tconn, $ins_sub_producto_animal."\n"."INSERT sub_producto_animal failed: ");
 							$Errores['sub_producto_animal']++;
 							echoif("\n\n");
 						} else {    
@@ -1986,7 +2079,7 @@ if ($nRows_titulares > 0) {
 						echoif("act_pastoreo_detalle_sub_producto_animal\n");
 						echoif($ins_act_pastoreo_detalle_sub_producto_animal."\n");
 						if (!$Tconn->query($ins_act_pastoreo_detalle_sub_producto_animal)) {
-							pdberror($Tconn, "INSERT act_pastoreo_detalle_sub_producto_animal failed: ");
+							pdberror($Tconn, $ins_act_pastoreo_detalle_sub_producto_animal."\n"."INSERT act_pastoreo_detalle_sub_producto_animal failed: ");
 							$Errores['act_pastoreo_detalle_sub_producto_animal']++;
 							echoif("\n\n");
 						}
@@ -2073,18 +2166,19 @@ echo "FIN!\n";
 print_r($Errores);
 
 function echoif($str) {
-	if (! DEBUG) {
+	if (DEBUG) {
 		echo $str;
 	};
 }
 function pdberror($conn, $str) {
 	$errors[] = $conn->error;
-	echoif("=DB==================================================================\n");
+	echo "=DB==================================================================\n";
+	echo "row:".$GLOBALS['i']."\n";
     printf("error : %s\n", $conn->errno);
 	print_r($errors);
 	//echoif($str)." (" . $conn->errno . ") " . $conn->error."\n";
-	echoif($str." (" . mysqli_errno($conn) . ") " . mysqli_error($conn)."\n");
-	echoif("=====================================================================\n\n");
+	echo $str." (" . mysqli_errno($conn) . ") " . mysqli_error($conn)."\n";
+	echo "=====================================================================\n\n";
 	exit;
 	}
 function ins_superficie ($conn, $medida, $unidad_id) {
@@ -2135,9 +2229,11 @@ function ins_familiares($Sconn, $Tconn, $id_naf_completo, $k1, $k2, $k3) {
 		$i=0;
 		while ($row_fam = mysqli_fetch_array($res_fam)) {
 			/* persona */
+			$apellido = mysqli_real_escape_string($Tconn, trim($row_fam['Apellido']));
+			$nombres = mysqli_real_escape_string($Tconn, trim($row_fam['Nombres']));
 			$ins_persona = " INSERT INTO persona (version, apellido, documento, fecha_nacimiento, nacionalidad, nombre, sexo, tipo_documento_id) ";
-			$ins_persona .= " VALUES ( 0, '".trim($row_fam['Apellido'])."', '".trim($row_fam['NumeroDocumento'])."', '".trim($row_fam['FechaNacimiento']);
-			$ins_persona .= "', 'Argentina', '".trim($row_fam['Nombres'])."', 'M', ".$row_fam['NumeroDocumento'].")";
+			$ins_persona .= " VALUES ( 0, '".$apellido."', '".trim($row_fam['NumeroDocumento'])."', '".trim($row_fam['FechaNacimiento']);
+			$ins_persona .= "', 'Argentina', '".$nombres."', 'M', ".$row_fam['NumeroDocumento'].")";
 			echoif($ins_persona."\n");
 			if (!$Tconn->query($ins_persona)) {
 				pdberror($Tconn, "INSERT persona (familiar ".$i.") failed: ");
