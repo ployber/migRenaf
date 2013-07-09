@@ -2,7 +2,7 @@
 include("include/db_funcs.php"); 
 include("include/funciones.php");
 
-define("DEBUG", 1);
+define("DEBUG", 0);
 
 $Errores = Array(
 	"persona"=>0,
@@ -219,8 +219,8 @@ if ($nRows_titulares > 0) {
 		$sql .= " AND tipo_documento_id = d.id ";
 		$sql .= " WHERE t.NumeroDocumento = '".$row_tit['NumeroDocumento']."'";
 		$sql .= " AND t.TipoDocumento = '".$row_tit['TipoDocumento']."'";
-		echo $sql."\n";
 		$res_existe_titular = $Sconn->query($sql);
+		echoif($sql."\n");
 		if ($Sconn->errno) {
 			$errors[] = $Sconn->error;
 		    printf("error : %s\n", $Sconn->errno);
@@ -245,7 +245,7 @@ if ($nRows_titulares > 0) {
 		$sql .= " WHERE t.CyNumeroDocumento = '".$row_tit['CyNumeroDocumento']."'";
 		$sql .= " AND t.CyTipoDocumento = '".$row_tit['CyTipoDocumento']."'";
 		$res_existe_conyuge = $Sconn->query($sql);
-		echo $sql."\n";
+		echoif($sql."\n");
 		if ($Sconn->errno) {
 			$errors[] = $Sconn->error;
 		    printf("error : %s\n", $Sconn->errno);
@@ -260,15 +260,15 @@ if ($nRows_titulares > 0) {
 				}
 			}
 		}
-		echo "[".$existe_titular."][".$existe_conyuge."]\n";
+		echoif("[".$existe_titular."][".$existe_conyuge."]\n");
 
 		if ($existe_titular || $existe_conyuge) {
 			//salto a la fila siguiente
 			if ($existe_titular) {
-				echo "Ya existe el titular en la tabla de personas ".$row_tit['TipoDocumento']."-".$row_tit['NumeroDocumento'];
+				echoif("Ya existe el titular en la tabla de personas ".$row_tit['TipoDocumento']."-".$row_tit['NumeroDocumento']);
 			}
 			if ($existe_conyuge) {
-				echo "Ya existe el conyuge en la tabla de personas ".$row_tit['CyTipoDocumento']."-".$row_tit['CyNumeroDocumento'];
+				echoif("Ya existe el conyuge en la tabla de personas ".$row_tit['CyTipoDocumento']."-".$row_tit['CyNumeroDocumento']);
 			}
 			echoif("\nignoro registro.\n\n");
 			echoif("\n\n\n");
@@ -293,8 +293,13 @@ if ($nRows_titulares > 0) {
 		} else {
 			$SINCONYUGE=1;
 		}
+		/* documentos del titular y el conyuge iguales no cargo conyuge */
+		if (($row_tit['NumeroDocumento'] == $row_tit['CyNumeroDocumento']) &&
+			$row_tit['TipoDocumento'] == $row_tit['CyTipoDocumento'] ) {
+				$SINCONYUGE=1;
+		}
 
-		$sel_tierra = "select * from tierra where Ventanillaregistro = ".$k1." and pc = ".$k2." and Correlativo = ".$k3;
+		$sel_tierra = select_tierra($k1, $k2, $k3);
 		$res_tierra = $Sconn->query($sel_tierra);
 		if ($Sconn->errno) {
 			$nRows_tierra = 0;
@@ -386,7 +391,7 @@ if ($nRows_titulares > 0) {
 		*/	 		
 		/* INSERT persona */
 		echoif("titular\n");
-		echoif(" tit_IdDocumento[".$row_tit['tdtit_id']."]\n tit_TipoDocumento[".$row_tit['TipoDocumento']."]\n tit_NumeroDocumento[".$row_tit['NumeroDocumento']."]\n tit_Nombres[".$row_tit['Nombres']."]\n tit_Apellido[".$row_tit['Apellido']."]\n");
+		echoif(" tit_IdDocumento[".$row_tit['tdtit_id']."] tit_TipoDocumento[".$row_tit['TipoDocumento']."] tit_NumeroDocumento[".$row_tit['NumeroDocumento']."] tit_Nombres[".$row_tit['Nombres']."] tit_Apellido[".$row_tit['Apellido']."]\n");
 		echoif(" Nivel educativo [".$row_tit['NivelEducativo']."]\n");
 		echoif(" Nivel educativo Cy [".$row_tit['CyNivelEducativo']."]\n");
 		echoif(" parentesco [".$row_tit['parentesco']."]\n");
@@ -410,7 +415,7 @@ if ($nRows_titulares > 0) {
 		}
 
 		echoif("conyuge\n");
-		echoif(" cy_IdDocumento[".$row_tit['tdcy_id']."]\n cy_TipoDocumento[".$row_tit['CyTipoDocumento']."]\n cy_NumeroDocumento[".$row_tit['CyNumeroDocumento']."]\n cy_Nombres[".$row_tit['CyNombres']."]\n cy_Apellido[".$row_tit['CyApellido']."]\n");
+		echoif(" cy_IdDocumento[".$row_tit['tdcy_id']."] cy_TipoDocumento[".$row_tit['CyTipoDocumento']."] cy_NumeroDocumento[".$row_tit['CyNumeroDocumento']."] cy_Nombres[".$row_tit['CyNombres']."] cy_Apellido[".$row_tit['CyApellido']."]\n");
 				
 		if (!$SINCONYUGE) {
 			$apellido = mysqli_real_escape_string($Tconn, $row_tit['CyApellido']);
