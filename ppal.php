@@ -636,7 +636,7 @@ if ($nRows_titulares > 0) {
 		 /* ACTIVIDADES COMPLEMENTARIAS */
 		/*******************************/
 		/* actividad_complementaria */
-				/* -literales- 
+		/* -literales- 
 		 * alquilaTierra
 		 * trabajosFijos
 		 * trabajosEventuales
@@ -2091,8 +2091,6 @@ if ($nRows_titulares > 0) {
 					}
 				}
 			}
-						
-			
 		}	
 		
 		/* TODAS */
@@ -2105,7 +2103,6 @@ if ($nRows_titulares > 0) {
 		/* 13  actividad_principal ACT_PRINCIPAL_PESCA = 'actPrincipalPesca', 'renaf.ActPesca' */
 		/* 11  actividad_principal ACT_PRINCIPAL_RECOLECCION = 'actPrincipalRecoleccion', 'renaf.ActRecoleccion' */
 		/* 14  actividad_principal ACT_PRINCIPAL_TURISMO_RURAL = 'actPrincipalTurismoRural', 'renaf.ActTurismoRural' */
-												 
 		/*
 		 * 			has many
 		 * 				act_agricultura_detalle   rel   act_agricultura_act_agricultura_detalle
@@ -2120,14 +2117,139 @@ if ($nRows_titulares > 0) {
 		 * 				has many
 		 * 					sub_producto_animal   rel   act_pastoreo_detalle_sub_producto_animal
 		 */
-		
+
+		 
+		/* limite */
+		$ins_limite = " insert into limite (version, tiene_limites) ";
+		$ins_limite .= " values (0, ".$row_tierra['LimitesDefinidos']." )";
+		echoif("limite \n");
+		echoif($ins_limite."\n");
+		if (!$Tconn->query($ins_limite)) {
+			pdberror($Tconn, $ins_limite."\n"."INSERT limite failed: ");
+			$Errores['limite']++;
+			echoif("\n\n");
+		} else {    
+			$id_limite = $Tconn->insert_id;
+			echoif(" id limite :".$id_limite."\n");
+		}
+		if ($row_tierra['LimitesDefinidos']) {
+			/* PROPIETARIO(0, "Propietario", "opPropietario"), */ 
+			if ($row_tierra['hsPropietario'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsPropietario'], $row_tierra['hsPropietarioUn'], "Propietario");
+			}
+			/* ARRENDATARIO(1, "Arrendatario", "opArrandario"),  */
+			if ($row_tierra['hsArrendatario'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsArrendatario'], $row_tierra['hsArrendatarioUn'], "Arrendatario");
+			}
+			/* EN_MEDIERIA(2, "En mediería", "opMedireria"), */ 
+			if ($row_tierra['hsMedieria'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsMedieria'], $row_tierra['hsMedieriaUn'], "En mediería");
+			}
+			/* EN_APARCERIA(3, "En aparcería", "opAparceria"), */ 
+			if ($row_tierra['hsAparceria'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsAparceria'], $row_tierra['hsAparceriaUn'], "En aparcería");
+			}
+			/* CODOMINIOS(4, "￼Condominios hereditarios indivisos (en sucesión)", "opCodominios"), */ 
+			if ($row_tierra['hsCondominio'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsCondominio'], $row_tierra['hsCondominioUn'], "￼Condominios hereditarios indivisos (en sucesión)");
+			}
+			/* CONTRATO_ACCIDENTAL(5, "Contrato accidental", "opContratoAccidental"), */ 
+			if ($row_tierra['hsContrato'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsContrato'], $row_tierra['hsContratoUn'], "Contrato accidental");
+			}
+			/* TIERRAS_PRIVADAS(6, "Posesión en tierras privadas", "opTierrasPrivadas"), */ 
+			if ($row_tierra['hsPPrivadas'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsPPrivadas'], $row_tierra['hsPPrivadasUn'], "Posesión en tierras privadas");
+			}
+			/* TIERRAS_FISCALES(7, "Tenencia en tierras fiscales", "opTierrasFiscales"), */ 
+			if ($row_tierra['hsTFiscales'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsTFiscales'], $row_tierra['hsTFiscalesUn'], "Tenencia en tierras fiscales");
+			}
+			/* hsTPrivadas	hsTPrivadasUn FALTA! en la tabla tierra origen */
+			/* INTEGRANTES(8, "Integrantes", "opIntegrantes"), */ 
+			if ($row_tierra['hsIntegrante'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsIntegrante'], $row_tierra['hsIntegranteUn'], "Integrantes");
+			}
+			/* POSESION(9, "Posesión comunitaria indígena", "opPosesion"), */ 
+			if ($row_tierra['hsPosesionComunitariaIndigena'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsPosesionComunitariaIndigena'], $row_tierra['hsPosesionComunitariaIndigenaUn'], "Posesión comunitaria indígena");
+			}
+			/* PROPIEDAD(10, "Propiedad comunitaria indígena", "opPropiedad"), */ 
+			if ($row_tierra['hsPropiedadComunitariaIndigena'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsPropiedadComunitariaIndigena'], $row_tierra['hsPropiedadComunitariaIndigenaUn'], "Propiedad comunitaria indígena");
+			}
+			/* OTRA(11, "OTRA", "opOtra"), */ 
+			if ($row_tierra['hsOtro'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsOtro'], $row_tierra['hsOtroUn'], "OTRA");
+			}
+			/* SUPERFICIE_TOTAL(12, "SUPERFICIE TOTAL", "opSuperficieTotal"), */
+			if ($row_tierra['hsTotal'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['hsTotal'], $row_tierra['hsTotalUn'], "SUPERFICIE TOTAL");
+			}
+			/* SUPERFICIE_REAL(13, "Superficie real trabajada por el NAFa", */ 
+			if ($row_tierra['supRealTrabajada'] > 0) {
+				ins_explotacion_con_limite($Tconn, $id_limite, $row_tierra['supRealTrabajada'], $row_tierra['supRealTrabajadaUn'], "Superficie real trabajada por el NAF");
+			}
+
+		} else {
+			/* POSESION(0, "Posesion", "opPosesionS"), */
+			ins_explotacion_sin_limite($Tconn, $id_limite, "Posesion", $row_tierra['ESDPosesionComunero'], $row_tierra['ESDPosesionParque'], $row_tierra['ESDPosesionTierraFiscal'], $row_tierra['ESDPosesionOtros']);
+			/* TENENCIA(1, "Tenencia", "opPropietarioS"), */ 
+			ins_explotacion_sin_limite($Tconn, $id_limite, "Tenencia", $row_tierra['ESDTenenciaComunero'], $row_tierra['ESDTenenciaParque'], $row_tierra['ESDTenenciaTierraFiscal'], $row_tierra['ESDTenenciaOtros']);
+			/* ARRENDATARIO(2, "Arrendatario", "opArrandarioS"), */ 
+			ins_explotacion_sin_limite($Tconn, $id_limite, "Arrendatario", $row_tierra['ESDArrendamientoComunero'], $row_tierra['ESDArrendamientoParque'], $row_tierra['ESDArrendamientoTierraFiscal'], $row_tierra['ESDArrendamientoOtros']);
+			/* EN_APARCERIA(3, "En aparcería", "opAparceriaS"),  */
+			ins_explotacion_sin_limite($Tconn, $id_limite, "En aparcería", $row_tierra['ESDAparceriaComunero'], $row_tierra['ESDAparceriaParque'], $row_tierra['ESDAparceriaTierraFiscal'], $row_tierra['ESDAparceriaOtros']);
+			/* DERECHOSO(4, "Derechoso", "opDerechosoS"),  */
+			ins_explotacion_sin_limite($Tconn, $id_limite, "Derechoso", $row_tierra['ESDDerechosoComunero'], $row_tierra['ESDDerechosoParque'], $row_tierra['ESDDerechosoTierraFiscal'], $row_tierra['ESDDerechosoOtros']);
+			/* INTEGRANTE(5, "Integrante", "opIntegranteS"),  */
+			ins_explotacion_sin_limite($Tconn, $id_limite, "Integrante", $row_tierra['ESDIntegranteComunero'], $row_tierra['ESDIntegranteParque'], $row_tierra['ESDIntegranteTierraFiscal'], $row_tierra['ESDIntegranteOtros']);
+			/* POSESION_INDIGENA(6, "Posesión comunitaria indígena", "opPosesionIndigenaS"), */
+			ins_explotacion_sin_limite($Tconn, $id_limite, "Posesión comunitaria indígena", $row_tierra['ESDPosesionComunitariaIndigenaComunero'], $row_tierra['ESDPosesionComunitariaIndigenaParque'], $row_tierra['ESDPosesionComunitariaIndigenaTierraFiscal'], $row_tierra['ESDPosesionComunitariaIndigenaOtros']); 			
+						
+		} 
+		/* tierra */
+		$ins_tierra = " insert into tierra (version, asociativa, compartido, compartido_con_cuantos, limite_id) ";
+		$ins_tierra .= " values (0, ".$row_tierra['ExplotacionAsociativa'].", ".$row_tierra['Compartida'].", ".$row_tierra['ComparteCon'].", ".$id_limite." )";
+		echoif("tierra \n");
+		echoif($ins_tierra."\n");
+		if (!$Tconn->query($ins_tierra)) {
+			pdberror($Tconn, $ins_tierra."\n"."INSERT tierra failed: ");
+			$Errores['tierra']++;
+			echoif("\n\n");
+		} else {    
+			$id_tierra = $Tconn->insert_id;
+			echoif(" id tierra :".$id_tierra."\n");
+		}
+				
 		/* Actualizo naf_completo */
 		$upd_nafcompleto = " update naf_completo ";
-		$upd_nafcompleto .= " set domicilio_id = ".$id_domicilio;
-		$upd_nafcompleto .= " , actividad_id = ".$id_actividad_completa;
-		$upd_nafcompleto .= " , domicilio_produccion_id = ".$id_domicilio_prod;
+		$upd_nafcompleto .= " set actividad_id = ".$id_actividad_completa;
+//centros_salud_id
+//contrata_maquinaria_id
 		$upd_nafcompleto .= " , distanciaavivienda = ".$row_tierra['DistanciaAlPredio'];
+		$upd_nafcompleto .= " , domicilio_id = ".$id_domicilio;
+		$upd_nafcompleto .= " , domicilio_produccion_id = ".$id_domicilio_prod;
+//escuela_educacion_especial_id
+//escuela_primaria_id
+//escuela_secundaria_id
+//escuela_terciaria_id
+//familia_administra
+//familia_decide_donde_se_vende
+//guarderia_id
+//jardin_de_infantes_id
+//mano_de_obra_id
+//recursos_id
+//tecnologia_id
+//tiene_croquis
+		$upd_nafcompleto .= " , tierra_id = '".$id_tierra;
 		$upd_nafcompleto .= " , unidad_distanciaavivienda = '".$row_tierra['DistanciaAlPredioUnidad']."'";
+//vivienda_detalle_id
+//date_created
+//fecha_creacion
+//last_updated
+//observaciones
+//telefono_contacto
 		$upd_nafcompleto .= " where id = ".$id_naf_completo;
 		
 		if (!$Tconn->query($upd_nafcompleto)) {
@@ -2139,27 +2261,6 @@ if ($nRows_titulares > 0) {
 
 
 /* naf_completo		
-, centros_salud_id
-, contrata_maquinaria_id
-, escuela_educacion_especial_id
-, escuela_primaria_id
-, escuela_secundaria_id
-, escuela_terciaria_id
-, familia_administra
-, familia_decide_donde_se_vende
-, guarderia_id
-, jardin_de_infantes_id
-, mano_de_obra_id
-, recursos_id
-, tecnologia_id
-, tiene_croquis
-, tierra_id
-, vivienda_detalle_id
-, date_created
-, fecha_creacion
-, last_updated
-, observaciones
-, telefono_contacto
 */				
 				
 		$Tconn->commit();
@@ -2274,6 +2375,65 @@ function ins_familiares($Sconn, $Tconn, $id_naf_completo, $k1, $k2, $k3) {
 									
 		}
 	}
+}
+function ins_explotacion_con_limite($conn, $limite, $condicion, $unidad, $condicionEnum) {
 
+	$id_superficie = ins_superficie($conn, $condicion, $unidad);
+
+	$ins_explotacion_con_limites = " insert into explotacion_con_limites (version, condicion, otra, superficie_id) ";
+	if (!$condicionEnum == "OTRA") {
+		$ins_explotacion_con_limites .= " values ( 0, '".$condicionEnum."', null, ".$id_superficie." )";
+	} else {
+		$ins_explotacion_con_limites .= " values ( 0, null, '".$condicionEnum."', ".$id_superficie." )";
+	}
+	echoif("explotacion_con_limites \n");
+	echoif($ins_explotacion_con_limites."\n");
+	if (!$conn->query($ins_explotacion_con_limites)) {
+		pdberror($conn, $ins_explotacion_con_limites."\n"."INSERT explotacion_con_limites failed: ");
+		$Errores['explotacion_con_limites']++;
+		echoif("\n\n");
+	} else {    
+		$id_explotacion_con_limites = $conn->insert_id;
+		echoif(" id explotacion_con_limites :".$id_explotacion_con_limites."\n");
+	}
+
+	$ins_limite_explotacion_con_limites = " insert into limite_explotacion_con_limites (limite_explotaciones_con_limites_id, explotacion_con_limites_id) ";
+	$ins_limite_explotacion_con_limites .= " values (".$limite.", ".$id_explotacion_con_limites." )";
+	echoif("limite_explotacion_con_limites \n");
+	echoif($ins_limite_explotacion_con_limites."\n");
+	if (!$conn->query($ins_limite_explotacion_con_limites)) {
+		pdberror($conn, $ins_limite_explotacion_con_limites."\n"."INSERT limite_explotacion_con_limites failed: ");
+		$Errores['limite_explotacion_con_limites']++;
+		echoif("\n\n");
+	} 
+
+	return 1;
+}
+function ins_explotacion_sin_limite($conn, $limite, $condicion, $cco, $prn, $otf, $otr) {
+
+	$ins_explotacion_sin_limites = " insert into explotacion_sin_limites (version, campo_comunero, condicion, otras, otras_tierras_fiscales, parqueoreserva_natural) ";
+	$ins_explotacion_sin_limites .= " values ( 0, ".$cco.", '".$condicionEnum."', ".$otr.", ".$otf.", ".$prn." )";
+	echoif("explotacion_sin_limites \n");
+	echoif($ins_explotacion_sin_limites."\n");
+	if (!$conn->query($ins_explotacion_sin_limites)) {
+		pdberror($conn, $ins_explotacion_sin_limites."\n"."INSERT explotacion_sin_limites failed: ");
+		$Errores['explotacion_sin_limites']++;
+		echoif("\n\n");
+	} else {    
+		$id_explotacion_sin_limites = $conn->insert_id;
+		echoif(" id explotacion_sin_limites :".$id_explotacion_sin_limites."\n");
+	}
+
+	$ins_limite_explotacion_sin_limites = " insert into limite_explotacion_sin_limites (limite_explotaciones_sin_limites_id, explotacion_sin_limites_id) ";
+	$ins_limite_explotacion_sin_limites .= " values (".$limite.", ".$id_explotacion_sin_limites." )";
+	echoif("limite_explotacion_sin_limites \n");
+	echoif($ins_limite_explotacion_sin_limites."\n");
+	if (!$conn->query($ins_limite_explotacion_sin_limites)) {
+		pdberror($conn, $ins_limite_explotacion_sin_limites."\n"."INSERT limite_explotacion_sin_limites failed: ");
+		$Errores['limite_explotacion_sin_limites']++;
+		echoif("\n\n");
+	} 
+
+	return 1;
 }
 ?>
