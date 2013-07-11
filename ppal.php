@@ -2,7 +2,7 @@
 include("include/db_funcs.php"); 
 include("include/funciones.php");
 
-define("DEBUG", 0);
+define("DEBUG", 1);
 
 $Errores = Array(
 	"persona"=>0,
@@ -403,9 +403,7 @@ if ($nRows_titulares > 0) {
 		$ins_titular .= " VALUES ( 0, '".$apellido."', '".$row_tit['NumeroDocumento']."', '".$row_tit['FechaNacimiento']."', 'Argentina', '".$nombres."', 'M', ".$row_tit['tdtit_id'].")";
 		echoif($ins_titular."\n");
 		if (!$Tconn->query($ins_titular)) {
-			pdberror($Tconn, $ins_titular."\n"."INSERT persona (titular) failed: ");
-			$Errores['persona']++;
-			echoif("\n\n");
+			pdberror($Tconn, $ins_titular."\n"."INSERT persona (titular) failed: ");$Errores['persona']++;echoif("\n\n");
 		} else {
 			$id_titular = $Tconn->insert_id;
 			echoif(" id persona:".$id_titular."\n\n");
@@ -424,9 +422,7 @@ if ($nRows_titulares > 0) {
 			$ins_conyuge .= " VALUES ( 0, '".$apellido."', '".$row_tit['CyNumeroDocumento']."', '".$row_tit['CyFechaNacimiento']."', 'Argentina', '".$nombres."', 'F', ".$row_tit['tdcy_id'].")";
 			echoif($ins_conyuge."\n");
 			if (!$Tconn->query($ins_conyuge)) {
-				pdberror($Tconn, $ins_conyuge."\n"."INSERT persona (conyuge) failed: ");
-				$Errores['persona']++;				
-				echoif("\n\n");
+				pdberror($Tconn, $ins_conyuge."\n"."INSERT persona (conyuge) failed: ");$Errores['persona']++;echoif("\n\n");
 			} else {    
 				$id_conyuge = $Tconn->insert_id;
 				echoif(" id conyuge:".$id_conyuge."\n");
@@ -443,9 +439,7 @@ if ($nRows_titulares > 0) {
 			$ins_integrante .= " VALUES ( 0, ".trim($row_tit['niveled1_id']).", ".trim($row_tit['parentesco1_id']).", ".trim($row_tit['parentesco2_id']).", ".$id_titular.", b'".$row_tit['TrabajaEnElPredio']."')";
 			echoif($ins_integrante."\n");
 			if (!$Tconn->query($ins_integrante)) {
-				pdberror($Tconn, $ins_integrante."\n"."INSERT integrante (titular) failed: ");
-				$Errores['integrante']++;
-				echoif("\n\n");
+				pdberror($Tconn, $ins_integrante."\n"."INSERT integrante (titular) failed: ");$Errores['integrante']++;echoif("\n\n");
 			} else {
 				$id_integrante_tit = $Tconn->insert_id;
 				echoif(" id integrante titular:".$id_integrante_tit."\n\n");
@@ -461,9 +455,7 @@ if ($nRows_titulares > 0) {
 			$ins_integrante .= " VALUES ( 0, ".trim($row_tit['niveled2_id']).", ".trim($row_tit['parentesco2_id']).", ".trim($row_tit['parentesco1_id']).", ".$id_conyuge.", b'".$row_tit['CyTrabajaEnElPredio']."')";
 			echoif($ins_integrante."\n");
 			if (!$Tconn->query($ins_integrante)) {
-				pdberror($Tconn, $ins_integrante."\n"."INSERT integrante (conyuge) failed: ");
-				$Errores['integrante']++;
-				echoif("\n\n");
+				pdberror($Tconn, $ins_integrante."\n"."INSERT integrante (conyuge) failed: ");$Errores['integrante']++;echoif("\n\n");
 			} else {
 				$id_integrante_cy = $Tconn->insert_id;
 				echoif(" id integrante Conyuge:".$id_integrante_cy."\n\n");
@@ -480,9 +472,7 @@ if ($nRows_titulares > 0) {
 		echoif("titular_completa (titular)\n");
 		echoif($ins_tit_completa."\n");
 		if (!$Tconn->query($ins_tit_completa)) {
-			pdberror($Tconn, $ins_tit_completa."\n"."INSERT titular_completa (titular) failed: ");
-			$Errores['titular_completa']++;
-			echoif("\n\n");
+			pdberror($Tconn, $ins_tit_completa."\n"."INSERT titular_completa (titular) failed: ");$Errores['titular_completa']++;echoif("\n\n");
 		} else {
 			$id_tit_completa_tit = $Tconn->insert_id;
 			echoif(" id titular_completa (titular):".$id_tit_completa_tit."\n");
@@ -493,9 +483,7 @@ if ($nRows_titulares > 0) {
 			echoif("titular_completa (conyuge)\n");
 			echoif($ins_tit_completa."\n");
 			if (!$Tconn->query($ins_tit_completa)) {
-				pdberror($Tconn, $ins_tit_completa."\n"."INSERT titular_completa (conyuge) failed: ");
-				$Errores['titular_completa']++;
-				echoif("\n\n");
+				pdberror($Tconn, $ins_tit_completa."\n"."INSERT titular_completa (conyuge) failed: ");$Errores['titular_completa']++;echoif("\n\n");
 			}  else {
 				$id_tit_completa_cy = $Tconn->insert_id;
 				echoif(" id titular_completa (conyuge):".$id_tit_completa_cy."\n");
@@ -512,9 +500,7 @@ if ($nRows_titulares > 0) {
 		echoif("naf_completo\n");
 		echoif($ins_naf_completo."\n");
 		if (!$Tconn->query($ins_naf_completo)) {
-			pdberror($Tconn, $ins_naf_completo."\n"."INSERT naf_completo failed: ");
-			$Errores['naf_completo']++;
-			echoif("\n\n");
+			pdberror($Tconn, $ins_naf_completo."\n"."INSERT naf_completo failed: ");$Errores['naf_completo']++;echoif("\n\n");
 		} else {    
 			$id_naf_completo = $Tconn->insert_id;
 			echoif(" id naf_completo:".$id_naf_completo."\n");
@@ -530,9 +516,7 @@ if ($nRows_titulares > 0) {
 		echoif("naf_completo_integrante\n");
 		echoif($ins_naf_completo_integrante."\n");
 		if (!$Tconn->query($ins_naf_completo_integrante)) {
-			pdberror($Tconn, $ins_naf_completo_integrante."\n"."INSERT naf_completo_integrante failed: ");
-			$Errores['naf_completo_integrante']++;
-			echoif("\n\n");
+			pdberror($Tconn, $ins_naf_completo_integrante."\n"."INSERT naf_completo_integrante failed: ");$Errores['naf_completo_integrante']++;echoif("\n\n");
 		}
 		
 		/* resto integrantes - familiares */
@@ -557,9 +541,7 @@ if ($nRows_titulares > 0) {
 		echoif($ins_domicilio."\n");
 		$id_domicilio = 0;
 		if (!$Tconn->query($ins_domicilio)) {
-			pdberror($Tconn, $ins_domicilio."\n"."INSERT domicilio (persona) failed: ");
-			$Errores['domicilio']++;
-			echoif("\n\n");
+			pdberror($Tconn, $ins_domicilio."\n"."INSERT domicilio (persona) failed: ");$Errores['domicilio']++;echoif("\n\n");
 		} else {    
 			$id_domicilio = $Tconn->insert_id;
 			echoif(" id domicilio:".$id_domicilio."\n");
@@ -584,9 +566,7 @@ if ($nRows_titulares > 0) {
 		echoif($ins_domicilio."\n");
 		$id_domicilio_prod = 0;
 		if (!$Tconn->query($ins_domicilio)) {
-			pdberror($Tconn, $ins_domicilio."\n"."INSERT domicilio (produccion) failed: ");
-			$Errores['domicilio']++;
-			echoif("\n\n");
+			pdberror($Tconn, $ins_domicilio."\n"."INSERT domicilio (produccion) failed: ");$Errores['domicilio']++;echoif("\n\n");
 		} else {    
 			$id_domicilio_prod = $Tconn->insert_id;
 			echoif(" id domicilio Produccion:".$id_domicilio_prod."\n");
@@ -602,6 +582,7 @@ if ($nRows_titulares > 0) {
 		 * 			actividad_complementaria   rel   actividad_completa_actividad_complementaria
 		 * 			actividad_principal   rel   actividad_completa_actividad_principal
 		 * 			has many
+		 * 				act_produccion 
 		 * 				act_agricultura_detalle   rel   act_agricultura_act_agricultura_detalle
 		 * 				act_agroindustria_detalle   rel   act_agroindustria_act_agroindustria_detalle
 		 * 				act_apicultura_detalle   rel   act_apicultura_act_apicultura_detalle
@@ -613,10 +594,18 @@ if ($nRows_titulares > 0) {
 		 * 				act_pastoreo_detalle   rel   act_pastoreo_act_pastoreo_detalle
 		 * 				has many
 		 * 					sub_producto_animal   rel   act_pastoreo_detalle_sub_producto_animal
-		 * act_produccion ?
 		 *
-		 */ 
-
+		 * 7   actividad_principal ACT_PRINCIPAL_AGRICULTURA = 'actPrincipalAgricultura', 'renaf.ActAgricultura
+		 * 8.a actividad_principal ACT_PRINCIPAL_PASTOREO = 'actPrincipalPastoreo', 'renaf.ActPastoreo'
+		 * 8.d actividad_principal ACT_PRINCIPAL_APICULTURA = 'actPrincipalApicultura', 'renaf.ActApicultura'
+		 * 9   actividad_principal ACT_PRINCIPAL_ARTESANIA = 'actPrincipalArtesania', 'renaf.ActArtesania'
+		 * 10  actividad_principal ACT_PRINCIPAL_AGROINDUSTRIA = 'actPrincipalAgroindustria', 'renaf.ActAgroindustria'
+		 * 12  actividad_principal ACT_PRINCIPAL_CAZA = 'actPrincipalCaza', 'renaf.ActCaza'
+		 * 13  actividad_principal ACT_PRINCIPAL_PESCA = 'actPrincipalPesca', 'renaf.ActPesca'
+		 * 11  actividad_principal ACT_PRINCIPAL_RECOLECCION = 'actPrincipalRecoleccion', 'renaf.ActRecoleccion'
+		 * 14  actividad_principal ACT_PRINCIPAL_TURISMO_RURAL = 'actPrincipalTurismoRural', 'renaf.ActTurismoRural' 
+		 */
+		 
 		/* actividad_completa */
 		$ins_actividad_completa = " insert into actividad_completa (version, ingreso_adicional_anual, ingreso_complementario_anual) ";
 		$ins_actividad_completa .= " values (0, 0, 0)";
@@ -624,9 +613,7 @@ if ($nRows_titulares > 0) {
 		echoif("actividad_completa\n");
 		echoif($ins_actividad_completa."\n");
 		if (!$Tconn->query($ins_actividad_completa)) {
-			pdberror($Tconn, $ins_actividad_completa."\n"."INSERT actividad_completa failed: ");
-			$Errores['actividad_completa']++;
-			echoif("\n\n");
+			pdberror($Tconn, $ins_actividad_completa."\n"."INSERT actividad_completa failed: ");$Errores['actividad_completa']++;echoif("\n\n");
 		} else {    
 			$id_actividad_completa = $Tconn->insert_id;
 			echoif(" id actividad_completa:".$id_actividad_completa."\n");
@@ -2093,33 +2080,9 @@ if ($nRows_titulares > 0) {
 			}
 		}	
 		
-		/* TODAS */
-		/* 7   actividad_principal ACT_PRINCIPAL_AGRICULTURA = 'actPrincipalAgricultura', 'renaf.ActAgricultura */
-		/* 8.a actividad_principal ACT_PRINCIPAL_PASTOREO = 'actPrincipalPastoreo', 'renaf.ActPastoreo' */
-		/* 8.d actividad_principal ACT_PRINCIPAL_APICULTURA = 'actPrincipalApicultura', 'renaf.ActApicultura' */
-		/* 9   actividad_principal ACT_PRINCIPAL_ARTESANIA = 'actPrincipalArtesania', 'renaf.ActArtesania' */
-		/* 10  actividad_principal ACT_PRINCIPAL_AGROINDUSTRIA = 'actPrincipalAgroindustria', 'renaf.ActAgroindustria' */
-		/* 12  actividad_principal ACT_PRINCIPAL_CAZA = 'actPrincipalCaza', 'renaf.ActCaza' */
-		/* 13  actividad_principal ACT_PRINCIPAL_PESCA = 'actPrincipalPesca', 'renaf.ActPesca' */
-		/* 11  actividad_principal ACT_PRINCIPAL_RECOLECCION = 'actPrincipalRecoleccion', 'renaf.ActRecoleccion' */
-		/* 14  actividad_principal ACT_PRINCIPAL_TURISMO_RURAL = 'actPrincipalTurismoRural', 'renaf.ActTurismoRural' */
-		/*
-		 * 			has many
-		 * 				act_agricultura_detalle   rel   act_agricultura_act_agricultura_detalle
-		 * 				act_agroindustria_detalle   rel   act_agroindustria_act_agroindustria_detalle
-		 * 				act_apicultura_detalle   rel   act_apicultura_act_apicultura_detalle
-		 * 				act_artesania_detalle   rel   act_artesania_act_artesania_detalle
-		 * 				act_caza_detalle   rel   act_caza_act_caza_detalle
-		 * 				act_pesca_detalle   rel   act_pesca_act_pesca_detalle
-		 * 				act_recoleccion_detalle   rel   act_recoleccion_act_recoleccion_detalle
-		 * 				act_turismo_rural_detalle   rel   act_turismo_rural_act_turismo_rural_detalle
-		 * 				act_pastoreo_detalle   rel   act_pastoreo_act_pastoreo_detalle
-		 * 				has many
-		 * 					sub_producto_animal   rel   act_pastoreo_detalle_sub_producto_animal
-		 */
-
-		 
-		/* limite */
+		  /**********/		 
+		 /* limite */
+		/**********/
 		$ins_limite = " insert into limite (version, tiene_limites) ";
 		$ins_limite .= " values (0, ".$row_tierra['LimitesDefinidos']." )";
 		echoif("limite \n");
@@ -2208,7 +2171,10 @@ if ($nRows_titulares > 0) {
 			ins_explotacion_sin_limite($Tconn, $id_limite, "Posesión comunitaria indígena", $row_tierra['ESDPosesionComunitariaIndigenaComunero'], $row_tierra['ESDPosesionComunitariaIndigenaParque'], $row_tierra['ESDPosesionComunitariaIndigenaTierraFiscal'], $row_tierra['ESDPosesionComunitariaIndigenaOtros']); 			
 						
 		} 
-		/* tierra */
+
+		  /**********/
+		 /* tierra */
+		/**********/
 		$ins_tierra = " insert into tierra (version, asociativa, compartido, compartido_con_cuantos, limite_id) ";
 		$ins_tierra .= " values (0, ".$row_tierra['ExplotacionAsociativa'].", ".$row_tierra['Compartida'].", ".$row_tierra['ComparteCon'].", ".$id_limite." )";
 		echoif("tierra \n");
@@ -2221,30 +2187,323 @@ if ($nRows_titulares > 0) {
 			$id_tierra = $Tconn->insert_id;
 			echoif(" id tierra :".$id_tierra."\n");
 		}
-				
-		/* Actualizo naf_completo */
+		
+		  /**************************************/
+		 /* tipo_juridico tierra_tipo_juridico */
+		/**************************************/
+		/* ASOCIACION_CIVIL(0, "Asociación Civil"), */  
+		if ($row_tierra['AsocAsociacionCivil']) {
+			ins_tipo_juridico($Tconn, $id_tierra, $row_tierra['AsocCivilNombre'], "0");
+	 	}
+	 	/* COOPERATIVA(1, "Cooperativa"), */
+		if ($row_tierra['AsocCooperativa']) {
+			ins_tipo_juridico($Tconn, $id_tierra, $row_tierra['CooperativaNombre'], "1");
+		}
+	 	/* COOPERADORA(2, "Cooperadora"), */ 
+		if ($row_tierra['AsocCooperadora']) {
+			ins_tipo_juridico($Tconn, $id_tierra, $row_tierra['CooperadoraNombre'], "2");
+		}
+	 	/* CONSORCIO(3, "Consorcio"), */ 
+		if ($row_tierra['AsocConsorcio']) {
+			ins_tipo_juridico($Tconn, $id_tierra, $row_tierra['ConsorcioNombre'], "3");
+		}
+		/* COMUNIDAD(4, "Comunidad de pueblo originario Civil"), */
+		if ($row_tierra['AsocComunidad']) {
+			ins_tipo_juridico($Tconn, $id_tierra, $row_tierra['ComunidadNombre'], "4");
+		}
+		/* HUERTA_COMUNITARIA(5, "Huerta comunitaria"), */ 
+		if ($row_tierra['AsocHuerta']) {
+			ins_tipo_juridico($Tconn, $id_tierra, $row_tierra['HuertaNombre'], "5");
+		}
+		/* GRUPO(6, "Grupo"), */ 
+		if ($row_tierra['AsocGrupo']) {
+			ins_tipo_juridico($Tconn, $id_tierra, $row_tierra['GrupoNombre'], "6");
+		}
+		/* SOCIEDAD_DE_HECHO(7, "Sociedad de hecho") */
+		if ($row_tierra['AsocSociedad']) {
+			ins_tipo_juridico($Tconn, $id_tierra, $row_tierra['SociedadNombre'], "7");
+		}												
+
+		  /************************/
+		 /* riesgo tierra_riesgo */
+		/************************/
+		if (!$row_tierra['RiesgosGranizo']) {
+			ins_riesgo($Tconn, $id_tierra, 'granizo', 'Granizo', $row_tierra['AsocSociedad']);
+		}
+		if (!$row_tierra['RiesgosHelada']) {
+			ins_riesgo($Tconn, $id_tierra, 'helada', 'Helada', $row_tierra['RiesgosHelada']);
+		}
+		if (!$row_tierra['RiesgosInundacion']) {
+			ins_riesgo($Tconn, $id_tierra, 'inundacion', 'Inundación', $row_tierra['RiesgosInundacion']);
+		}
+		if (!$row_tierra['RiesgosVientos']) {
+			ins_riesgo($Tconn, $id_tierra, 'vientosFuertes', 'Vientos fuertes', $row_tierra['RiesgosVientos']);
+		}
+		if (!$row_tierra['RiesgosExceso']) {
+			ins_riesgo($Tconn, $id_tierra, 'exesoHidrico', 'Exeso hídrico', $row_tierra['RiesgosExceso']);
+		}
+		if (!$row_tierra['RiesgosDeficit']) {
+			ins_riesgo($Tconn, $id_tierra, 'deficitHidrico', 'Déficit hídrico', $row_tierra['RiesgosDeficit']);
+		}
+		if (!$row_tierra['RiesgosIncendio']) {
+			ins_riesgo($Tconn, $id_tierra, 'incendio', 'Incendio', $row_tierra['RiesgosIncendio']);
+		}
+		if (!$row_tierra['RiesgosBiologicos']) {
+			ins_riesgo($Tconn, $id_tierra, 'biologicos', 'Biológicos / Sanitarios', $row_tierra['RiesgosBiologicos']);
+		}
+		if (!$row_tierra['RiesgosComerciales']) {
+			ins_riesgo($Tconn, $id_tierra, 'comerciales', 'Comerciales', $row_tierra['RiesgosComerciales']);
+		}
+		if (!$row_tierra['RiesgosFinancieros']) {
+			ins_riesgo($Tconn, $id_tierra, 'financieros', 'Financieros', $row_tierra['RiesgosFinancieros']);
+		}
+ 
+		  /********************************/
+		 /* prevencion tierra_prevencion */
+		/********************************/
+		if (!$row_tierra['PrevencionMalla']) {
+			ins_prevencion ($Tconn, $id_tierra, $row_tierra['PrevencionMalla'], 'mallaAntigranizo', '¿Utilizan malla antigranizo?' );
+		} 
+		if (!$row_tierra['PrevencionRiego'] || !$row_tierra['PrevencionQuemadores']) {
+			ins_prevencion ($Tconn, $id_tierra, $row_tierra['PrevencionRiego'], 'aspersionEnHeladas', '¿Utilizan quemadores / riego por aspersión en heladas?' );
+		}
+		if (!$row_tierra['PrevencionObras']) {
+			ins_prevencion ($Tconn, $id_tierra, $row_tierra['PrevencionObras'], 'canales', '¿Utilizan canales, terraplenes, defensas, represas, etc.?' );
+		}
+		if (!$row_tierra['PrevencionCobertura']) {
+			ins_prevencion ($Tconn, $id_tierra, $row_tierra['PrevencionCobertura'], 'coberturaRiesgos', '¿Contrata cobertura de riesgos (seguro / fondo para contingencias/etc.)?' );
+		} 
+		if (!$row_tierra['PrevencionOtra']) {
+			ins_prevencion ($Tconn, $id_tierra, $row_tierra['PrevencionOtra'], 'otra', $row_tierra['PrevencionOtraTexto'] );
+		}
+
+		  /************/
+		 /* recursos */
+		/************/
+
+		/* rec_riego */
+		$id_superficie = ins_superficie($Tconn, $row_tit['RiegoSuperficie'], $row_tit['RiegoUnidades']); 
+		switch ($row_tit['RiegoTipo']) {
+			case '1':
+				$tipoRiego = "Superficial";
+        		break;
+		    case '2':
+		        $tipoRiego = "Goteo";
+		        break;
+		    case '3':
+		        $tipoRiego = "Aspersión";
+		        break;
+		    case '4':
+		        $tipoRiego = "Manual";
+		        break;
+		    case 'x':
+		        $tipoRiego = "N/A";
+		        break;
+		}
+		$ins_riego = " insert into rec_riego (version, superficie_id, tipo_riego, utiliza) ";
+		$ins_riego .= " values (0, ".$id_superficie.", '".$tipoRiego."', ".$row_tit['Riego']." )";
+		echoif("rec_riego\n");
+		echoif($ins_riego."\n");
+		if (!$Tconn->query($ins_riego)) {
+			pdberror($Tconn, $ins_riego."\n"."INSERT rec_riego failed: ");
+			$Errores['rec_riego']++;
+			echoif("\n\n");
+		} else {    
+			$id_riego = $Tconn->insert_id;
+			echoif(" id riego :".$id_riego."\n");
+		}
+		/* recursos */
+		$ins_recursos = " insert into recursos (version, riego_id, utiliza_agua_para_consumo_animal, utiliza_traccion_animal_para_producir) ";
+		$ins_recursos .= " values (0, ".$id_riego.", ".$row_tit['AguaConsumoAnimal'].", ".$row_tit['TraccionAnimal']." )";
+		echoif("recursos\n");
+		echoif($ins_recursos."\n");
+		if (!$Tconn->query($ins_recursos)) {
+			pdberror($Tconn, $ins_recursos."\n"."INSERT recursos failed: ");
+			$Errores['recursos']++;
+			echoif("\n\n");
+		} else {    
+			$id_recursos = $Tconn->insert_id;
+			echoif(" id recursos :".$id_recursos."\n");
+		}
+		/* rec_tractores */
+		/* 1 */
+		switch ($row_tit['TR1Adquisicion']) {
+			case '1':
+				$adquisicion_particular = 1;$adquisicion_subsidiado = 0;
+        		break;
+			case '2':
+				$adquisicion_particular = 0;$adquisicion_subsidiado = 1;
+        		break;
+			case 'x':
+				$adquisicion_particular = 0;$adquisicion_subsidiado = 0;
+        		break;
+   		}
+ 		$ins_rec_tractores = " insert into rec_tractores (version, adquisicion_particular, adquisicion_subsidiado, cantidad, modelo, potencia_enhp, recursos_id, uso) ";
+		$ins_rec_tractores .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tit['TR1Cantidad'].", '".$row_tit['TR1Modelo']."', ".$row_tit['TR1Potencia'].", ".$id_recursos.", '".$row_tit['TR1Propiedad']."' )";
+		echoif("rec_tractores 1\n");
+		echoif($ins_rec_tractores."\n");
+		if (!$Tconn->query($ins_rec_tractores)) {
+			pdberror($Tconn, $ins_rec_tractores."\n"."INSERT rec_tractores failed: ");
+			$Errores['rec_tractores']++;
+			echoif("\n\n");
+		}
+		/* 2 */
+		switch ($row_tit['TR2Adquisicion']) {
+			case '1':
+				$adquisicion_particular = 1;$adquisicion_subsidiado = 0;
+        		break;
+			case '2':
+				$adquisicion_particular = 0;$adquisicion_subsidiado = 1;
+        		break;
+			case 'x':
+				$adquisicion_particular = 0;$adquisicion_subsidiado = 0;
+        		break;
+   		}
+ 		$ins_rec_tractores = " insert into rec_tractores (version, adquisicion_particular, adquisicion_subsidiado, cantidad, modelo, potencia_enhp, recursos_id, uso) ";
+		$ins_rec_tractores .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tit['TR2Cantidad'].", '".$row_tit['TR2Modelo']."', ".$row_tit['TR2Potencia'].", ".$id_recursos.", '".$row_tit['TR2Propiedad']."' )";
+		echoif("rec_tractores 2\n");
+		echoif($ins_rec_tractores."\n");
+		if (!$Tconn->query($ins_rec_tractores)) {
+			pdberror($Tconn, $ins_rec_tractores."\n"."INSERT rec_tractores failed: ");
+			$Errores['rec_tractores']++;
+			echoif("\n\n");
+		}
+		/* rec_vehiculo */
+		/* 1 */
+		switch ($row_tit['VH1Adquisicion']) {
+			case '1':
+				$adquisicion_particular = 1;$adquisicion_subsidiado = 0;
+        		break;
+			case '2':
+				$adquisicion_particular = 0;$adquisicion_subsidiado = 1;
+        		break;
+			case 'x':
+				$adquisicion_particular = 0;$adquisicion_subsidiado = 0;
+        		break;
+   		}
+ 		$ins_rec_vehiculo = " insert into rec_vehiculo (version, adquisicion_particular, adquisicion_subsidiado, cantidad, modelo, recursos_id, tipo, uso) ";
+		$ins_rec_vehiculo .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tit['VH1Cantidad'].", '".$row_tit['VH1Modelo']."', ".$id_recursos.", '".$row_tit['VH1Tipo']."', '".$row_tit['VH1Propiedad']."' )";
+		echoif("rec_vehiculo 1\n");
+		echoif($ins_rec_vehiculo."\n");
+		if (!$Tconn->query($ins_rec_vehiculo)) {
+			pdberror($Tconn, $ins_rec_vehiculo."\n"."INSERT rec_vehiculo failed: ");
+			$Errores['rec_vehiculo']++;
+			echoif("\n\n");
+		}
+		/* 2 */
+		switch ($row_tit['VH2Adquisicion']) {
+			case '1':
+				$adquisicion_particular = 1;$adquisicion_subsidiado = 0;
+        		break;
+			case '2':
+				$adquisicion_particular = 0;$adquisicion_subsidiado = 1;
+        		break;
+			case 'x':
+				$adquisicion_particular = 0;$adquisicion_subsidiado = 0;
+        		break;
+   		}
+ 		$ins_rec_vehiculo = " insert into rec_vehiculo (version, adquisicion_particular, adquisicion_subsidiado, cantidad, modelo, recursos_id, tipo, uso) ";
+		$ins_rec_vehiculo .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tit['VH2Cantidad'].", '".$row_tit['VH2Modelo']."', ".$id_recursos.", '".$row_tit['VH2Tipo']."', '".$row_tit['VH2Propiedad']."' )";
+		echoif("rec_vehiculo 2\n");
+		echoif($ins_rec_vehiculo."\n");
+		if (!$Tconn->query($ins_rec_vehiculo)) {
+			pdberror($Tconn, $ins_rec_vehiculo."\n"."INSERT rec_vehiculo failed: ");
+			$Errores['rec_vehiculo']++;
+			echoif("\n\n");
+		}
+		
+		/* rec_embarcaciones */
+		/* 1 */
+		switch ($row_tierra['EMB1Adquisicion']) {
+			case '1':
+				$adquisicion_particular = 1;$adquisicion_subsidiado = 0;
+        		break;
+			case '2':
+				$adquisicion_particular = 0;$adquisicion_subsidiado = 1;
+        		break;
+			case 'x':
+				$adquisicion_particular = 0;$adquisicion_subsidiado = 0;
+        		break;
+   		}
+		switch ($row_tierra['EMB1Motor']) {
+			case '1':
+				$externo = 1;$interno = 0;
+        		break;
+			case '2':
+				$externo = 0;$interno = 1;
+        		break;
+			case 'x':
+				$externo = 0;$interno = 0;
+        		break;
+   		}
+ 		$ins_rec_embarcaciones = " insert into rec_embarcaciones (version, adquisicion_particular, adquisicion_subsidiado, cantidad, eslora, material, motor_externo, motor_interno, potencia, recursos_id, tipo, uso) ";
+		$ins_rec_embarcaciones .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tierra['EMB1Cantidad'].", ".$row_tierra['EMB1Eslora'].", '".$row_tierra['EMB1Material']."', ".$externo.", ".$interno.", ".$row_tierra['EMB1Potencia'].", ".$id_recursos.", '".$row_tierra['EMB1Tipo']."', '".$row_tierra['EMB1Uso']."' )";
+		echoif("rec_embarcaciones 1\n");
+		echoif($ins_rec_embarcaciones."\n");
+		if (!$Tconn->query($ins_rec_embarcaciones)) {
+			pdberror($Tconn, $ins_rec_embarcaciones."\n"."INSERT rec_embarcaciones failed: ");
+			$Errores['rec_embarcaciones']++;
+			echoif("\n\n");
+		}
+		/* 2 */
+		switch ($row_tierra['EMB2Adquisicion']) {
+			case '1':
+				$adquisicion_particular = 1;$adquisicion_subsidiado = 0;
+        		break;
+			case '2':
+				$adquisicion_particular = 0;$adquisicion_subsidiado = 1;
+        		break;
+			case 'x':
+				$adquisicion_particular = 0;$adquisicion_subsidiado = 0;
+        		break;
+   		}
+		switch ($row_tierra['EMB2Motor']) {
+			case '1':
+				$externo = 1;$interno = 0;
+        		break;
+			case '2':
+				$externo = 0;$interno = 1;
+        		break;
+			case 'x':
+				$externo = 0;$interno = 0;
+        		break;
+   		}
+ 		$ins_rec_embarcaciones = " insert into rec_embarcaciones (version, adquisicion_particular, adquisicion_subsidiado, cantidad, eslora, material, motor_externo, motor_interno, potencia, recursos_id, tipo, uso) ";
+		$ins_rec_embarcaciones .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tierra['EMB2Cantidad'].", ".$row_tierra['EMB2Eslora'].", '".$row_tierra['EMB2Material']."', ".$externo.", ".$interno.", ".$row_tierra['EMB2Potencia'].", ".$id_recursos.", '".$row_tierra['EMB2Tipo']."', '".$row_tierra['EMB2Uso']."' )";
+		echoif("rec_embarcaciones 2\n");
+		echoif($ins_rec_embarcaciones."\n");
+		if (!$Tconn->query($ins_rec_embarcaciones)) {
+			pdberror($Tconn, $ins_rec_embarcaciones."\n"."INSERT rec_embarcaciones failed: ");
+			$Errores['rec_embarcaciones']++;
+			echoif("\n\n");
+		}
+								
+
+		  /**************************/						
+		 /* Actualizo naf_completo */
+		/**************************/
 		$upd_nafcompleto = " update naf_completo ";
 		$upd_nafcompleto .= " set actividad_id = ".$id_actividad_completa;
-//centros_salud_id
-//contrata_maquinaria_id
+//centros_salud_id	salud_detalle
+//contrata_maquinaria_id	contrata_maquinaria
 		$upd_nafcompleto .= " , distanciaavivienda = ".$row_tierra['DistanciaAlPredio'];
 		$upd_nafcompleto .= " , domicilio_id = ".$id_domicilio;
 		$upd_nafcompleto .= " , domicilio_produccion_id = ".$id_domicilio_prod;
-//escuela_educacion_especial_id
-//escuela_primaria_id
-//escuela_secundaria_id
-//escuela_terciaria_id
-//familia_administra
-//familia_decide_donde_se_vende
-//guarderia_id
-//jardin_de_infantes_id
-//mano_de_obra_id
-//recursos_id
-//tecnologia_id
+//escuela_educacion_especial_id	distancia_viviendaeducacion
+//escuela_primaria_id	distancia_viviendaeducacion
+//escuela_secundaria_id	distancia_viviendaeducacion
+//escuela_terciaria_id	distancia_viviendaeducacion
+		$upd_nafcompleto .= " , familia_administra = ".$row_tit['Duenios'];
+		$upd_nafcompleto .= " , familia_decide_donde_se_vende = ".$row_tit['DecidenVender'];
+//guarderia_id	distancia_viviendaeducacion
+//jardin_de_infantes_id	distancia_viviendaeducacion
+//mano_de_obra_id	mano_de_obra_completa
+//recursos_id	recursos
+//tecnologia_id	tecnologia
 //tiene_croquis
-		$upd_nafcompleto .= " , tierra_id = '".$id_tierra;
+		$upd_nafcompleto .= " , tierra_id = ".$id_tierra;
 		$upd_nafcompleto .= " , unidad_distanciaavivienda = '".$row_tierra['DistanciaAlPredioUnidad']."'";
-//vivienda_detalle_id
+//vivienda_detalle_id	vivienda_detalle
 //date_created
 //fecha_creacion
 //last_updated
@@ -2253,7 +2512,7 @@ if ($nRows_titulares > 0) {
 		$upd_nafcompleto .= " where id = ".$id_naf_completo;
 		
 		if (!$Tconn->query($upd_nafcompleto)) {
-			pdberror($Tconn, "UPDATE naf_completo (domicilios) failed: ");
+			pdberror($Tconn, $upd_nafcompleto."\n"."UPDATE naf_completo (domicilios) failed: ");
 			$Errores['naf_completo']++;
 			echoif("\n\n");
 		}		
@@ -2412,7 +2671,7 @@ function ins_explotacion_con_limite($conn, $limite, $condicion, $unidad, $condic
 function ins_explotacion_sin_limite($conn, $limite, $condicion, $cco, $prn, $otf, $otr) {
 
 	$ins_explotacion_sin_limites = " insert into explotacion_sin_limites (version, campo_comunero, condicion, otras, otras_tierras_fiscales, parqueoreserva_natural) ";
-	$ins_explotacion_sin_limites .= " values ( 0, ".$cco.", '".$condicionEnum."', ".$otr.", ".$otf.", ".$prn." )";
+	$ins_explotacion_sin_limites .= " values ( 0, ".$cco.", '".$condicion."', ".$otr.", ".$otf.", ".$prn." )";
 	echoif("explotacion_sin_limites \n");
 	echoif($ins_explotacion_sin_limites."\n");
 	if (!$conn->query($ins_explotacion_sin_limites)) {
@@ -2435,5 +2694,77 @@ function ins_explotacion_sin_limite($conn, $limite, $condicion, $cco, $prn, $otf
 	} 
 
 	return 1;
+}
+
+function ins_tipo_juridico($conn, $id_tierra, $descripcion, $tipo) {
+	/* tipo_juridico */
+	$ins_tipo_juridico = " insert into tipo_juridico (version, descripcion, tipo )";
+	$ins_tipo_juridico .= " values (0, '".$descripcion."', '".$tipo."' )";
+	echoif("tipo_juridico\n");
+	echoif($ins_tipo_juridico."\n");
+	if (!$conn->query($ins_tipo_juridico)) {
+		pdberror($conn, $ins_tipo_juridico."\n"."INSERT tipo_juridico failed: ");$Errores['tipo_juridico']++;echoif("\n\n");
+	} else {    
+		$id_tipo_juridico = $conn->insert_id;
+		echoif(" id tipo_juridico :".$id_tipo_juridico."\n");
+	}
+	/* tierra_tipo_juridico */
+	$ins_tierra_tipo_juridico = " insert into tierra_tipo_juridico (tierra_tipos_juridicos_id, tipo_juridico_id)";
+	$ins_tierra_tipo_juridico .= " values (".$id_tierra.", ".$id_tipo_juridico." )";
+	echoif("tierra_tipo_juridico\n");
+	echoif($ins_tierra_tipo_juridico."\n");
+	if (!$conn->query($ins_tierra_tipo_juridico)) {
+		pdberror($conn, $ins_tierra_tipo_juridico."\n"."INSERT tierra_tipo_juridico failed: ");$Errores['tierra_tipo_juridico']++;echoif("\n\n");
+	}
+	
+	return 1;
+	
+}
+
+function ins_riesgo($conn, $id_tierra, $cod, $descripcion, $frec) {
+	/* riesgo */
+	$ins_riesgo = " insert into riesgo (version, codigo, descripcion, frecuencia )";
+	$ins_riesgo .= " values (0, '".$cod."', '".$descripcion."', '".$frec."' )";
+	echoif("riesgo\n");
+	echoif($ins_riesgo."\n");
+	if (!$conn->query($ins_riesgo)) {
+		pdberror($conn, $ins_riesgo."\n"."INSERT riesgo failed: ");$Errores['riesgo']++;echoif("\n\n");
+	} else {    
+		$id_riesgo = $conn->insert_id;
+		echoif(" id riesgo :".$id_riesgo."\n");
+	}
+	/* tierra_riesgo */
+	$ins_tierra_riesgo = " insert into tierra_riesgo (tierra_riesgos_id, riesgo_id )";
+	$ins_tierra_riesgo .= " values (".$id_tierra.", ".$id_riesgo." )";
+	echoif("tierra_riesgo\n");
+	echoif($ins_tierra_riesgo."\n");
+	if (!$conn->query($ins_tierra_riesgo)) {
+		pdberror($conn, $ins_tierra_riesgo."\n"."INSERT tierra_riesgo failed: ");$Errores['tierra_riesgo']++;echoif("\n\n");
+	}
+	
+	return 1;
+	
+}
+function ins_prevencion ($conn, $id_tierra, $adoptado, $cod, $descripcion ){
+	/* tipo_juridico */
+	$ins_prevencion = " insert into prevencion (version, adoptado, codigo, descripcion )";
+	$ins_prevencion .= " values (0, ".$adoptado.", '".$cod."', '".$descripcion."' )";
+	echoif("prevencion\n");
+	echoif($ins_prevencion."\n");
+	if (!$conn->query($ins_prevencion)) {
+		pdberror($conn, $ins_prevencion."\n"."INSERT prevencion failed: ");$Errores['prevencion']++;echoif("\n\n");
+	} else {    
+		$id_prevencion = $conn->insert_id;
+		echoif(" id prevencion :".$id_prevencion."\n");
+	}
+	/* tierra_tipo_juridico */
+	$ins_tierra_prevencion = " insert into tierra_prevencion (tierra_prevenciones_id, prevencion_id )";
+	$ins_tierra_prevencion .= " values (".$id_tierra.", ".$id_prevencion." )";
+	echoif("tierra_prevencion\n");
+	echoif($ins_tierra_prevencion."\n");
+	if (!$conn->query($ins_tierra_prevencion)) {
+		pdberror($conn, $ins_tierra_prevencion."\n"."INSERT tierra_prevencion failed: ");$Errores['tierra_prevencion']++;echoif("\n\n");
+	}
+	
 }
 ?>
