@@ -2,7 +2,7 @@
 include("include/db_funcs.php"); 
 include("include/funciones.php");
 
-define("DEBUG", 1);
+define("DEBUG", 0);
 
 $Errores = Array(
 	"persona"=>0,
@@ -66,6 +66,7 @@ $listaTablas = Array(
 				"actividad_principal",   
 				"actividad_completa_adicionales",
 				"mejora_produccion",
+				"rec_embarcaciones",
 				"rec_tractores",
 				"rec_vehiculo",
 				"recursos",
@@ -186,6 +187,10 @@ if ($nRows_titulares > 0) {
 		echoif("row ".$i." Key:[".$k1."-".$k2."-".$k3."]");
 		echoif(" Titular :[".$row_tit['TipoDocumento']."][".$row_tit['NumeroDocumento']."]");
 		echoif(" Conyuge :[".$row_tit['CyTipoDocumento']."][".$row_tit['CyNumeroDocumento']."]\n");
+		$n_TipoDocumento = intval($row_tit['TipoDocumento']);
+		$n_NumeroDocumento = floatval($row_tit['NumeroDocumento']);
+		$n_CyTipoDocumento = intval($row_tit['CyTipoDocumento']);
+		$n_CyNumeroDocumento = floatval($row_tit['CyNumeroDocumento']);
 		
 		
 		if (($i % 100) == 0 ) {
@@ -198,17 +203,18 @@ if ($nRows_titulares > 0) {
 			echoif("\n\n\n");
 			continue;
 		}
+		if ($n_NumeroDocumento < 10000) {
+			//salto a la fila siguiente
+			echoif(" Titular con nro documento invalido: ".$n_NumeroDocumento.", ignoro registro.\n\n");
+			echoif("\n\n\n");
+			continue;
+		}
 				
 		$id_titular = -1;
 		$id_conyuge = -1;
 		$id_tit_completa_tit = -1;
 		$id_tit_completa_cy = -1;
 		
-		
-		$n_TipoDocumento = intval($row_tit['TipoDocumento']);
-		$n_NumeroDocumento = floatval($row_tit['NumeroDocumento']);
-		$n_CyTipoDocumento = intval($row_tit['CyTipoDocumento']);
-		$n_CyNumeroDocumento = floatval($row_tit['CyNumeroDocumento']);
 		
 		/* Si cualquiera de los dos ya existe en la tabla personas NO proceso el registro */
 		/* existe titular */
@@ -297,6 +303,9 @@ if ($nRows_titulares > 0) {
 		if (($row_tit['NumeroDocumento'] == $row_tit['CyNumeroDocumento']) &&
 			$row_tit['TipoDocumento'] == $row_tit['CyTipoDocumento'] ) {
 				$SINCONYUGE=1;
+		}
+		if ($n_CyTipoDocumento < 10000) {
+			$SINCONYUGE=1;
 		}
 
 		$sel_tierra = select_tierra($k1, $k2, $k3);
@@ -527,13 +536,13 @@ if ($nRows_titulares > 0) {
 		$ins_domicilio .= "VALUES ('0', "; 
 		$ins_domicilio .= "'' ,"; /* datos_catastrales */ 
 		$ins_domicilio .= $row_tierra['Departamento']." ,"; /* departamento_id */
-		$ins_domicilio .= "'".$row_tierra['Domicilio']."' ,"; /* direccion */
+		$ins_domicilio .= "'".mysqli_real_escape_string($Tconn, $row_tierra['Domicilio'])."' ,"; /* direccion */
 		 /* geo_lat, geo_lat_renaf, geo_long, geo_long_renaf, */ 
-		$ins_domicilio .= "'".$row_tierra['Localidad']."' ,"; /* localidad */
+		$ins_domicilio .= "'".mysqli_real_escape_string($Tconn, $row_tierra['Localidad'])."' ,"; /* localidad */
 		$ins_domicilio .= $row_tierra['Municipio']." ,"; /* municipio_distrito_comuna_id */ 
 		/* nrookm */
-		$ins_domicilio .= "'".$row_tierra['OtraReferencia']."' ,"; /* otra_referencia */ 
-		$ins_domicilio .= "'".$row_tierra['Paraje']."' ,"; /* paraje */
+		$ins_domicilio .= "'".mysqli_real_escape_string($Tconn, $row_tierra['OtraReferencia'])."' ,"; /* otra_referencia */ 
+		$ins_domicilio .= "'".mysqli_real_escape_string($Tconn, $row_tierra['Paraje'])."' ,"; /* paraje */
 		$ins_domicilio .= $row_tierra['Provincia']." ,"; /* provincia_id */ 
 		$ins_domicilio .= "'".$row_tierra['CP']."' "; /* codigo_postal */
 		$ins_domicilio .= ")";
@@ -550,15 +559,15 @@ if ($nRows_titulares > 0) {
 		/* domicilio_produccion_id */
 		$ins_domicilio = "INSERT INTO domicilio (version, datos_catastrales, departamento_id, direccion, localidad, municipio_distrito_comuna_id, otra_referencia, paraje, provincia_id, codigo_postal) ";
 		$ins_domicilio .= "VALUES ('0', "; 
-		$ins_domicilio .= "'".$row_tierra['EstabDatoCatastral']."' ,"; /* datos_catastrales */ 
+		$ins_domicilio .= "'".mysqli_real_escape_string($Tconn, $row_tierra['EstabDatoCatastral'])."' ,"; /* datos_catastrales */ 
 		$ins_domicilio .= $row_tierra['EstabDepartamento']." ,"; /* departamento_id */
-		$ins_domicilio .= "'".$row_tierra['EstabDomicilio']."' ,"; /* direccion */
+		$ins_domicilio .= "'".mysqli_real_escape_string($Tconn, $row_tierra['EstabDomicilio'])."' ,"; /* direccion */
 		 /* geo_lat, geo_lat_renaf, geo_long, geo_long_renaf, */ 
-		$ins_domicilio .= "'".$row_tierra['EstabLocalidad']."' ,"; /* localidad */
+		$ins_domicilio .= "'".mysqli_real_escape_string($Tconn, $row_tierra['EstabLocalidad'])."' ,"; /* localidad */
 		$ins_domicilio .= $row_tierra['EstabMunicipio']." ,"; /* municipio_distrito_comuna_id */ 
 		/* nrookm */
-		$ins_domicilio .= "'".$row_tierra['EstabOtraReferencia']."' ,"; /* otra_referencia */ 
-		$ins_domicilio .= "'".$row_tierra['EstabParaje']."' ,"; /* paraje */
+		$ins_domicilio .= "'".mysqli_real_escape_string($Tconn, $row_tierra['EstabOtraReferencia'])."' ,"; /* otra_referencia */ 
+		$ins_domicilio .= "'".mysqli_real_escape_string($Tconn, $row_tierra['EstabParaje'])."' ,"; /* paraje */
 		$ins_domicilio .= $row_tierra['EstabProvincia']." ,"; /* provincia_id */ 
 		$ins_domicilio .= "'".$row_tierra['EstabCP']."' "; /* codigo_postal */
 		$ins_domicilio .= ")";
@@ -608,8 +617,7 @@ if ($nRows_titulares > 0) {
 		 
 		/* actividad_completa */
 		$ins_actividad_completa = " insert into actividad_completa (version, ingreso_adicional_anual, ingreso_complementario_anual) ";
-		$ins_actividad_completa .= " values (0, 0, 0)";
-		/* FALTA! ingreso_adicional_anual, ingreso_complementario_anual */
+		$ins_actividad_completa .= " values (0, ".$row_tit['IngBrOtros'].", ".$row_tit['IngBrServicios'].")";
 		echoif("actividad_completa\n");
 		echoif($ins_actividad_completa."\n");
 		if (!$Tconn->query($ins_actividad_completa)) {
@@ -847,6 +855,89 @@ if ($nRows_titulares > 0) {
 			}
 		}
 
+		  /***************************/		 
+		 /* ACTIVIDADES ADICIONALES */
+		/***************************/
+
+		/* actividad_completa_adicionales */
+		/* FALTA! IngBrOtros */
+		if ($row_tit['AsigPorHijo'] > 0) {		 
+			$ins_actividad_completa_adicionales = " insert into actividad_completa_adicionales (actividad_completa_id, adicionales_string) ";
+			$ins_actividad_completa_adicionales .= " values (".$id_actividad_completa.", 'ingAdicAsignacionPorHijo')";
+			echoif("actividad_completa_adicionales\n");
+			echoif($ins_actividad_completa_adicionales."\n");
+			if (!$Tconn->query($ins_actividad_completa_adicionales)) {
+				pdberror($Tconn, $ins_actividad_completa_adicionales."\n"."INSERT actividad_completa_adicionales failed: ");
+				$Errores['actividad_completa_adicionales']++;
+				echoif("\n\n");
+			}
+		}
+		if ($row_tit['pensionJubilacion'] > 0) {		 
+			$ins_actividad_completa_adicionales = " insert into actividad_completa_adicionales (actividad_completa_id, adicionales_string) ";
+			$ins_actividad_completa_adicionales .= " values (".$id_actividad_completa.", 'ingAdicPensionJubilacion')";
+			echoif("actividad_completa_adicionales\n");
+			echoif($ins_actividad_completa_adicionales."\n");
+			if (!$Tconn->query($ins_actividad_completa_adicionales)) {
+				pdberror($Tconn, $ins_actividad_completa_adicionales."\n"."INSERT actividad_completa_adicionales failed: ");
+				$Errores['actividad_completa_adicionales']++;
+				echoif("\n\n");
+			}
+		}
+		if ($row_tit['pensionNoContrib'] > 0) {		 
+			$ins_actividad_completa_adicionales = " insert into actividad_completa_adicionales (actividad_completa_id, adicionales_string) ";
+			$ins_actividad_completa_adicionales .= " values (".$id_actividad_completa.", 'ingAdicPensionNoContributiva')";
+			echoif("actividad_completa_adicionales\n");
+			echoif($ins_actividad_completa_adicionales."\n");
+			if (!$Tconn->query($ins_actividad_completa_adicionales)) {
+				pdberror($Tconn, $ins_actividad_completa_adicionales."\n"."INSERT actividad_completa_adicionales failed: ");
+				$Errores['actividad_completa_adicionales']++;
+				echoif("\n\n");
+			}
+		}
+		if ($row_tit['pensionGraciable'] > 0) {		 
+			$ins_actividad_completa_adicionales = " insert into actividad_completa_adicionales (actividad_completa_id, adicionales_string) ";
+			$ins_actividad_completa_adicionales .= " values (".$id_actividad_completa.", 'ingAdicPensionGraciable')";
+			echoif("actividad_completa_adicionales\n");
+			echoif($ins_actividad_completa_adicionales."\n");
+			if (!$Tconn->query($ins_actividad_completa_adicionales)) {
+				pdberror($Tconn, $ins_actividad_completa_adicionales."\n"."INSERT actividad_completa_adicionales failed: ");
+				$Errores['actividad_completa_adicionales']++;
+				echoif("\n\n");
+			}
+		}
+		if ($row_tit['planAsistencialEmpleo'] > 0) {		 
+			$ins_actividad_completa_adicionales = " insert into actividad_completa_adicionales (actividad_completa_id, adicionales_string) ";
+			$ins_actividad_completa_adicionales .= " values (".$id_actividad_completa.", 'ingAdicPlanAsistencialEmpleo')";
+			echoif("actividad_completa_adicionales\n");
+			echoif($ins_actividad_completa_adicionales."\n");
+			if (!$Tconn->query($ins_actividad_completa_adicionales)) {
+				pdberror($Tconn, $ins_actividad_completa_adicionales."\n"."INSERT actividad_completa_adicionales failed: ");
+				$Errores['actividad_completa_adicionales']++;
+				echoif("\n\n");
+			}
+		}
+		if ($row_tit['seguroDesempleo'] > 0) {		 
+			$ins_actividad_completa_adicionales = " insert into actividad_completa_adicionales (actividad_completa_id, adicionales_string) ";
+			$ins_actividad_completa_adicionales .= " values (".$id_actividad_completa.", 'ingAdicSeguroDesempleo')";
+			echoif("actividad_completa_adicionales\n");
+			echoif($ins_actividad_completa_adicionales."\n");
+			if (!$Tconn->query($ins_actividad_completa_adicionales)) {
+				pdberror($Tconn, $ins_actividad_completa_adicionales."\n"."INSERT actividad_completa_adicionales failed: ");
+				$Errores['actividad_completa_adicionales']++;
+				echoif("\n\n");
+			}
+		}
+		if ($row_tit['ingresoOtro'] > 0) {		 
+			$ins_actividad_completa_adicionales = " insert into actividad_completa_adicionales (actividad_completa_id, adicionales_string) ";
+			$ins_actividad_completa_adicionales .= " values (".$id_actividad_completa.", 'ingAdicOtro')";
+			echoif("actividad_completa_adicionales\n");
+			echoif($ins_actividad_completa_adicionales."\n");
+			if (!$Tconn->query($ins_actividad_completa_adicionales)) {
+				pdberror($Tconn, $ins_actividad_completa_adicionales."\n"."INSERT actividad_completa_adicionales failed: ");
+				$Errores['actividad_completa_adicionales']++;
+				echoif("\n\n");
+			}
+		}
 		  /* * * * * * * * * * * * * * * * * * * * * * * * * * */
 		 /*  A C T I V I D A D E S     P R I N C I P A L E S  */
 		/* * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -883,12 +974,12 @@ if ($nRows_titulares > 0) {
 					$pv++;
 					
 					/* act_produccion */
-					$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+					$ins_act_produccion = " /* act_agricultura_detalle */ insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
 					$ins_act_produccion .= " values (0, '".trim($row_pv['can_cod'])."', ".$row_pv['PVAutoconsumo'].", ".$row_pv['PVMercado'].", ".$row_pv['PVIntercambio'].", ".$row_pv['PVPrecioUnitario'].", ".$row_pv['PVVolumen'].", ".$row_pv['PVUnidad'].", '".$row_pv['exp_cod']."' )";
 					echoif("act_produccion\n");
 					echoif($ins_act_produccion."\n");
 					if (!$Tconn->query($ins_act_produccion)) {
-						pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
+						pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion agricultura failed: ");$Errores['act_produccion']++;echoif("\n\n");
 					} else {    
 						$id_act_produccion = $Tconn->insert_id;
 						echoif(" id act_produccion :".$id_act_produccion."\n");
@@ -897,7 +988,7 @@ if ($nRows_titulares > 0) {
 					$id_superficie = ins_superficie($Tconn, $row_pv['PVACampo'], $row_pv['PVUn']);
 					/* act_agricultura_detalle */
 					$ins_act_agricultura_detalle = " insert into act_agricultura_detalle (version, bajo_cubierta, codigo, descripcion, produccion_id, superficie_id) ";
-					$ins_act_agricultura_detalle .= " values (0, ".$row_pv['PVCubierta'].", ".$row_pv['act_cod'].", '".$row_pv['act_desc']."', ".$id_act_produccion.", ".$id_superficie.")";
+					$ins_act_agricultura_detalle .= " values (0, ".$row_pv['PVCubierta'].", '".$row_pv['act_cod']."', '".$row_pv['act_desc']."', ".$id_act_produccion.", ".$id_superficie.")";
 					echoif("act_agricultura_detalle\n");
 					echoif($ins_act_agricultura_detalle."\n");
 					if (!$Tconn->query($ins_act_agricultura_detalle)) {
@@ -955,17 +1046,17 @@ if ($nRows_titulares > 0) {
 					$ai++;
 					
 					/* act_produccion */
-					$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+					$ins_act_produccion = " /* act_agroindustria_detalle */ insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
 					$ins_act_produccion .= " values (0, '".trim($row_ai['can_cod'])."', ".$row_ai['AgroindustriaAutoconsumo'].", ".$row_ai['AgroindustriaMercado'].", ".$row_ai['AgroindustriaIntercambio'].", ".$row_ai['AgroindustriaPrecio'].", ".$row_ai['AgroindustriaVolumen'].", ".$row_ai['AgroindustriaUnidad'].", '".$row_ai['AgroindustriaExplotacion']."' )";
 					echoif("act_produccion\n");
 					echoif($ins_act_produccion."\n");
 					if (!$Tconn->query($ins_act_produccion)) {
-						pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion failed: ");$Errores['act_produccion']++;echoif("\n\n");
+						pdberror($Tconn, $ins_act_produccion."\n"."INSERT act_produccion agroindustria failed: ");$Errores['act_produccion']++;echoif("\n\n");
 					} else {    
 						$id_act_produccion = $Tconn->insert_id;
 						echoif(" id act_produccion :".$id_act_produccion."\n");
 					}
-					/* act_agricultura_detalle */
+					/* act_agroindustria_detalle */
 					$ins_act_agroindustria_detalle = " insert into act_agroindustria_detalle (version, codigo, descripcion, produccion_id, produce_materia_prima) ";
 					$ins_act_agroindustria_detalle .= " values (0, '".$row_ai['act_cod']."', '".$row_ai['act_desc']."', ".$id_act_produccion.", ".$row_ai['AgroindustriaProduceMP'].")";
 					echoif("act_agroindustria_detalle\n");
@@ -1021,7 +1112,7 @@ if ($nRows_titulares > 0) {
 			/* act_apicultura_detalle   rel   act_apicultura_act_apicultura_detalle */
 			/* MIEL */
 			/* act_produccion */
-			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+			$ins_act_produccion = " /* act_apicultura_detalle */ insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
 			$ins_act_produccion .= " values (0, '".trim($row_tit['PAApiculturaMielCanal'])."', ".$row_tit['PAApiculturaMielAutoConsumo'].", ".$row_tit['PAApiculturaMielMercado'].", ".$row_tit['PAApiculturaMielIntercambio'].", ".$row_tit['PAApiculturaMielPrecioUnitario'].", ".$row_tit['PAApiculturaMielVolumen'].", ".$row_tit['PAApiculturaMielUnidades'].", '".$row_tit['PAApiculturaMielExplotacion']."' )";
 			echoif("act_produccion MIEL\n");
 			echoif($ins_act_produccion."\n");
@@ -1056,7 +1147,7 @@ if ($nRows_titulares > 0) {
 			}
 			/* CERA */
 			/* act_produccion */
-			$ins_act_produccion = " insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
+			$ins_act_produccion = " /* CERA */ insert into act_produccion (version, canal_venta, destino_auto_consumo, destino_mercado, destino_trueque, precio, produccion_anual_cantidad, produccion_anual_unidad_id, tipo_explotacion )"; 
 			$ins_act_produccion .= " values (0, '".trim($row_tit['PAApiculturaCeraCanal'])."', ".$row_tit['PAApiculturaCeraAutoConsumo'].", ".$row_tit['PAApiculturaCeraMercado'].", ".$row_tit['PAApiculturaCeraIntercambio'].", ".$row_tit['PAApiculturaCeraPrecioUnitario'].", ".$row_tit['PAApiculturaCeraVolumen'].", ".$row_tit['PAApiculturaCeraUnidades'].", '".$row_tit['PAApiculturaCeraExplotacion']."' )";
 			echoif("act_produccion CERA\n");
 			echoif($ins_act_produccion."\n");
@@ -2075,8 +2166,12 @@ if ($nRows_titulares > 0) {
 							$Errores['act_pastoreo_detalle_sub_producto_animal']++;
 							echoif("\n\n");
 						}
+					} else {
+						echoif("sin sub_producto_animal\n");
 					}
 				}
+			} else {
+				echoif("sin pastoreo\n");
 			}
 		}	
 		
@@ -2277,9 +2372,9 @@ if ($nRows_titulares > 0) {
 			ins_prevencion ($Tconn, $id_tierra, $row_tierra['PrevencionOtra'], 'otra', $row_tierra['PrevencionOtraTexto'] );
 		}
 
-		  /************/
-		 /* recursos */
-		/************/
+		  /* * * * * * * * * * */
+		 /*  R E C U R S O S  */
+		/* * * * * * * * * * */
 
 		/* rec_riego */
 		$id_superficie = ins_superficie($Tconn, $row_tit['RiegoSuperficie'], $row_tit['RiegoUnidades']); 
@@ -2338,8 +2433,9 @@ if ($nRows_titulares > 0) {
 				$adquisicion_particular = 0;$adquisicion_subsidiado = 0;
         		break;
    		}
+		$modelo = mysqli_real_escape_string($Tconn, $row_tit['TR1Modelo']);
  		$ins_rec_tractores = " insert into rec_tractores (version, adquisicion_particular, adquisicion_subsidiado, cantidad, modelo, potencia_enhp, recursos_id, uso) ";
-		$ins_rec_tractores .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tit['TR1Cantidad'].", '".$row_tit['TR1Modelo']."', ".$row_tit['TR1Potencia'].", ".$id_recursos.", '".$row_tit['TR1Propiedad']."' )";
+		$ins_rec_tractores .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tit['TR1Cantidad'].", '".$modelo."', ".$row_tit['TR1Potencia'].", ".$id_recursos.", '".$row_tit['TR1Propiedad']."' )";
 		echoif("rec_tractores 1\n");
 		echoif($ins_rec_tractores."\n");
 		if (!$Tconn->query($ins_rec_tractores)) {
@@ -2359,8 +2455,9 @@ if ($nRows_titulares > 0) {
 				$adquisicion_particular = 0;$adquisicion_subsidiado = 0;
         		break;
    		}
+		$modelo = mysqli_real_escape_string($Tconn, $row_tit['TR2Modelo']);
  		$ins_rec_tractores = " insert into rec_tractores (version, adquisicion_particular, adquisicion_subsidiado, cantidad, modelo, potencia_enhp, recursos_id, uso) ";
-		$ins_rec_tractores .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tit['TR2Cantidad'].", '".$row_tit['TR2Modelo']."', ".$row_tit['TR2Potencia'].", ".$id_recursos.", '".$row_tit['TR2Propiedad']."' )";
+		$ins_rec_tractores .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tit['TR2Cantidad'].", '".$modelo."', ".$row_tit['TR2Potencia'].", ".$id_recursos.", '".$row_tit['TR2Propiedad']."' )";
 		echoif("rec_tractores 2\n");
 		echoif($ins_rec_tractores."\n");
 		if (!$Tconn->query($ins_rec_tractores)) {
@@ -2381,8 +2478,9 @@ if ($nRows_titulares > 0) {
 				$adquisicion_particular = 0;$adquisicion_subsidiado = 0;
         		break;
    		}
+		$modelo = mysqli_real_escape_string($Tconn, $row_tit['VH1Modelo']);
  		$ins_rec_vehiculo = " insert into rec_vehiculo (version, adquisicion_particular, adquisicion_subsidiado, cantidad, modelo, recursos_id, tipo, uso) ";
-		$ins_rec_vehiculo .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tit['VH1Cantidad'].", '".$row_tit['VH1Modelo']."', ".$id_recursos.", '".$row_tit['VH1Tipo']."', '".$row_tit['VH1Propiedad']."' )";
+		$ins_rec_vehiculo .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tit['VH1Cantidad'].", '".$modelo."', ".$id_recursos.", '".$row_tit['VH1Tipo']."', '".$row_tit['VH1Propiedad']."' )";
 		echoif("rec_vehiculo 1\n");
 		echoif($ins_rec_vehiculo."\n");
 		if (!$Tconn->query($ins_rec_vehiculo)) {
@@ -2402,8 +2500,9 @@ if ($nRows_titulares > 0) {
 				$adquisicion_particular = 0;$adquisicion_subsidiado = 0;
         		break;
    		}
+		$modelo = mysqli_real_escape_string($Tconn, $row_tit['VH2Modelo']);
  		$ins_rec_vehiculo = " insert into rec_vehiculo (version, adquisicion_particular, adquisicion_subsidiado, cantidad, modelo, recursos_id, tipo, uso) ";
-		$ins_rec_vehiculo .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tit['VH2Cantidad'].", '".$row_tit['VH2Modelo']."', ".$id_recursos.", '".$row_tit['VH2Tipo']."', '".$row_tit['VH2Propiedad']."' )";
+		$ins_rec_vehiculo .= " values (0, ".$adquisicion_particular.", ".$adquisicion_subsidiado.", ".$row_tit['VH2Cantidad'].", '".$modelo."', ".$id_recursos.", '".$row_tit['VH2Tipo']."', '".$row_tit['VH2Propiedad']."' )";
 		echoif("rec_vehiculo 2\n");
 		echoif($ins_rec_vehiculo."\n");
 		if (!$Tconn->query($ins_rec_vehiculo)) {
@@ -2498,7 +2597,7 @@ if ($nRows_titulares > 0) {
 //guarderia_id	distancia_viviendaeducacion
 //jardin_de_infantes_id	distancia_viviendaeducacion
 //mano_de_obra_id	mano_de_obra_completa
-//recursos_id	recursos
+		$upd_nafcompleto .= " , recursos_id = ".$id_recursos;
 //tecnologia_id	tecnologia
 //tiene_croquis
 		$upd_nafcompleto .= " , tierra_id = ".$id_tierra;
@@ -2538,7 +2637,8 @@ function echoif($str) {
 function pdberror($conn, $str) {
 	$errors[] = $conn->error;
 	echo "=DB==================================================================\n";
-	echo "row:".$GLOBALS['i']."\n";
+	echo "row:".$GLOBALS['i']." Key:[".$GLOBALS['k1']."-".$GLOBALS['k2']."-".$GLOBALS['k3']."]\n";
+
     printf("error : %s\n", $conn->errno);
 	print_r($errors);
 	//echoif($str)." (" . $conn->errno . ") " . $conn->error."\n";
@@ -2553,7 +2653,7 @@ function ins_superficie ($conn, $medida, $unidad_id) {
 	echoif("superficie_completa\n");
 	echoif($ins_superficie_completa."\n");
 	if (!$conn->query($ins_superficie_completa)) {
-		pdberror($conn, "INSERT superficie_completa failed: ");
+		pdberror($conn, $ins_superficie_completa."\nINSERT superficie_completa failed: ");
 		$Errores['superficie_completa']++;
 		echoif("\n\n");
 	} else {    
@@ -2564,6 +2664,7 @@ function ins_superficie ($conn, $medida, $unidad_id) {
 }
 
 function vaciar_tablas($conn, $listaTablas) {
+	$conn->query("SET foreign_key_checks = 0;");
 	echoif("borrando tablas...\n");
 	foreach ($listaTablas as $tabla) {
 		$del_query = "delete FROM ".$tabla.";"; 
@@ -2575,6 +2676,7 @@ function vaciar_tablas($conn, $listaTablas) {
 			echoif("Se borro ok ".$tabla."\n");
 		}
 	}
+	$conn->query("SET foreign_key_checks = 1;");
 	echoif("Listo borrar tablas\n\n");
 	return;
 }
@@ -2699,10 +2801,10 @@ function ins_explotacion_sin_limite($conn, $limite, $condicion, $cco, $prn, $otf
 function ins_tipo_juridico($conn, $id_tierra, $descripcion, $tipo) {
 	/* tipo_juridico */
 	$ins_tipo_juridico = " insert into tipo_juridico (version, descripcion, tipo )";
-	$ins_tipo_juridico .= " values (0, '".$descripcion."', '".$tipo."' )";
+	$ins_tipo_juridico .= " values (0, '".mysqli_real_escape_string($conn, $descripcion)."', '".$tipo."' )";
 	echoif("tipo_juridico\n");
 	echoif($ins_tipo_juridico."\n");
-	if (!$conn->query($ins_tipo_juridico)) {
+	if (!$conn->query($ins_tipo_juridico)) {https://www.google.com.ar/
 		pdberror($conn, $ins_tipo_juridico."\n"."INSERT tipo_juridico failed: ");$Errores['tipo_juridico']++;echoif("\n\n");
 	} else {    
 		$id_tipo_juridico = $conn->insert_id;
