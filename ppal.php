@@ -98,6 +98,19 @@ $listaTablas = Array(
 				);
 
 
+$unidades_infraestructura = Array(
+	"8022"=>"8",	"8024"=>"2",	"8025"=>"2",	"8023"=>"2",
+	"8027"=>"8",	"8030"=>"8",	"8029"=>"8",	"8018"=>"8",
+	"8019"=>"8",	"8007"=>"4",	"8013"=>"2",	"8011"=>"4",
+	"8032"=>"4",	"8012"=>"4",	"8001"=>"4",	"8004"=>"4",
+	"8002"=>"4",	"8003"=>"4",	"8006"=>"4",	"8009"=>"4",
+	"8033"=>"4",	"8026"=>"8",	"8028"=>"8",	"8017"=>"8",
+	"8031"=>"8",	"8037"=>"9",	"8034"=>"4",	"8035"=>"8",
+	"8036"=>"9",	"8010"=>"4",	"8021"=>"8",	"8016"=>"4",
+	"8014"=>"12",	"8020"=>"11",	"8015"=>"11",	"8008"=>"4"
+);
+
+
 switch ($argc) {
 	case 1;
 		break;
@@ -2576,7 +2589,82 @@ if ($nRows_titulares > 0) {
 			$Errores['rec_embarcaciones']++;
 			echoif("\n\n");
 		}
-								
+
+		  /*********************/
+		 /* mejora_produccion */
+		/*********************/
+		if ($nRows_in > 0) {
+			$in=0;
+			while ($row_in = mysqli_fetch_array($res_in)) {
+				$in++;
+				if( isset( $unidades_infraestructura[$row_in['InfraestructuraCodigo']] ) ) {
+					/* mejora_produccion */
+					switch ($row_in['adq_cod']) {
+						case '1':
+							$propia = 1;
+							$subsidio = 0;
+	        				break;
+					    case '2':
+							$propia = 0;
+							$subsidio = 1;
+					        break;
+					    case '0':
+							$propia = 0;
+							$subsidio = 0;
+			        		break;
+					}
+					$id_superficie = ins_superficie($Tconn, $row_in['InfraestructuraCantidad'], $unidades_infraestructura[$row_in['InfraestructuraCodigo']]);
+					$ins_mejora_produccion = " insert into mejora_produccion (version, adquisicion_propia, adquisicion_subsidiado, cantidad_id, codigo, descripcion, recursos_id )"; 
+					$ins_mejora_produccion .= " values (0, ".$propia.", ".$subsidio.", ".$id_superficie.", '".$row_in['act_cod']."', '".$row_in['act_desc']."', ".$id_recursos." )";
+					echoif("mejora_produccion\n");
+					echoif($ins_mejora_produccion."\n");
+					if (!$Tconn->query($ins_mejora_produccion)) {
+						pdberror($Tconn, $ins_mejora_produccion."\n"."INSERT mejora_produccion failed: ");$Errores['mejora_produccion']++;echoif("\n\n");
+					} 
+				}
+			}
+		}
+		  /**************/
+		 /* tecnologia */
+		/**************/
+		$ins_tecnologia = " insert into tecnologia (version, abonos_organicos_comprados, abonos_organicos_produccion_propia, 
+abonos_organicos_subsidiados, abonos_quimicos_comprados, abonos_quimicos_subsidiados, control_plagas_no_quimicos, 
+control_plagas_no_quimicos_biologicos, control_plagas_no_quimicos_otros, control_plagas_quimicos, 
+mejoras_geneticas_cruzamiento, mejoras_geneticas_inseminacion_artificial, mejoras_geneticas_otras, 
+mejoras_geneticas_seleccion, rotacion_cultivos, semillas_compradas, 
+semillas_produccion_propia, semillas_subsidiadas) ";
+		$ins_tecnologia .= " values (0, ".$row_tit['AbonosOrganicosCompra']." , ".
+			$row_tit['AbonosOrganicosProduccion']." , ".
+			$row_tit['AbonosOrganicosSubsidiado']." , ".
+			$row_tit['AbonosQuimicosCompra']." , ".
+			$row_tit['AbonosQuimicosSubsidiado']." , ".
+			$row_tit['ControlPlagaNoQuimicos']." , ".
+			$row_tit['ControlPlagaBiologicos']." , ".
+			$row_tit['ControlPlagaOtrosMetodos']." , ".
+			$row_tit['ControlPlagaQuimicos']." , ".
+			$row_tit['AnimalesMejoraCruzamiento']." , ".
+			$row_tit['AnimalesMejoraIA']." , '".
+			$row_tit['AnimalesMejoraTexto']."' , ".
+			$row_tit['AnimalesMejoraSeleccion']." , ".
+			$row_tit['Rotacion']." , ".
+			$row_tit['SemillasCompra']." , ".
+			$row_tit['SemillasProduccioPropia']." , ".
+			$row_tit['SemillasSubsudiado']." )".
+		echoif("tecnologia\n");
+		echoif($ins_tecnologia."\n");
+		if (!$Tconn->query($ins_tecnologia)) {
+			pdberror($Tconn, $ins_tecnologia."\n"."INSERT tecnologia failed: ");
+			$Errores['tecnologia']++;
+			echoif("\n\n");
+		} else {    
+			$id_tecnologia = $Tconn->insert_id;
+			echoif(" id tecnologia :".$id_tecnologia."\n");
+		}
+		
+
+
+
+
 
 		  /**************************/						
 		 /* Actualizo naf_completo */
@@ -2598,7 +2686,7 @@ if ($nRows_titulares > 0) {
 //jardin_de_infantes_id	distancia_viviendaeducacion
 //mano_de_obra_id	mano_de_obra_completa
 		$upd_nafcompleto .= " , recursos_id = ".$id_recursos;
-//tecnologia_id	tecnologia
+		$upd_nafcompleto .= " , tecnologia_id	= ".$id_tecnologia;
 //tiene_croquis
 		$upd_nafcompleto .= " , tierra_id = ".$id_tierra;
 		$upd_nafcompleto .= " , unidad_distanciaavivienda = '".$row_tierra['DistanciaAlPredioUnidad']."'";
@@ -2615,12 +2703,7 @@ if ($nRows_titulares > 0) {
 			$Errores['naf_completo']++;
 			echoif("\n\n");
 		}		
-		 	
 
-
-/* naf_completo		
-*/				
-				
 		$Tconn->commit();
 		echoif("\n\n\n");
 
@@ -2629,23 +2712,6 @@ if ($nRows_titulares > 0) {
 echo "FIN!\n";
 print_r($Errores);
 
-function echoif($str) {
-	if (DEBUG) {
-		echo $str;
-	};
-}
-function pdberror($conn, $str) {
-	$errors[] = $conn->error;
-	echo "=DB==================================================================\n";
-	echo "row:".$GLOBALS['i']." Key:[".$GLOBALS['k1']."-".$GLOBALS['k2']."-".$GLOBALS['k3']."]\n";
-
-    printf("error : %s\n", $conn->errno);
-	print_r($errors);
-	//echoif($str)." (" . $conn->errno . ") " . $conn->error."\n";
-	echo $str." (" . mysqli_errno($conn) . ") " . mysqli_error($conn)."\n";
-	echo "=====================================================================\n\n";
-	exit;
-	}
 function ins_superficie ($conn, $medida, $unidad_id) {
 	$id_superficie_completa = -1;
 	$ins_superficie_completa = " insert into superficie_completa (version, medida, unidad_id) ";
@@ -2662,7 +2728,10 @@ function ins_superficie ($conn, $medida, $unidad_id) {
 	}
 	return $id_superficie_completa;
 }
-
+function unidad_infraestructura($codigo) {
+	
+	return $unidad;
+}
 function vaciar_tablas($conn, $listaTablas) {
 	$conn->query("SET foreign_key_checks = 0;");
 	echoif("borrando tablas...\n");

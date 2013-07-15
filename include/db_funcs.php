@@ -8,6 +8,23 @@ function db_query($db_conn, $query) {
 	}
 	return $result;
 }
+function echoif($str) {
+	if (DEBUG) {
+		echo $str;
+	};
+}
+function pdberror($conn, $str) {
+	$errors[] = $conn->error;
+	echo "=DB==================================================================\n";
+	echo "row:".$GLOBALS['i']." Key:[".$GLOBALS['k1']."-".$GLOBALS['k2']."-".$GLOBALS['k3']."]\n";
+
+    printf("error : %s\n", $conn->errno);
+	print_r($errors);
+	//echoif($str)." (" . $conn->errno . ") " . $conn->error."\n";
+	echo $str." (" . mysqli_errno($conn) . ") " . mysqli_error($conn)."\n";
+	echo "=====================================================================\n\n";
+	exit;
+	}
 
 function mostrarVariablesArray($arr) {echo $argc;
 	
@@ -286,25 +303,25 @@ titulares.PTRFueraPredioExplotacion,
 titulares.PTRfueraPredioIngresos,
 ifnull(titulares.Duenios, 0) Duenios,
 ifnull(titulares.DecidenVender, 0) DecidenVender,
-titulares.SemillasProduccioPropia,
-titulares.SemillasCompra,
-titulares.SemillasSubsudiado,
-titulares.AnimalesMejoraIA,
-titulares.AnimalesMejoraSeleccion,
-titulares.AnimalesMejoraCruzamiento,
-titulares.AnimalesMejoraOtra,
-titulares.AnimalesMejoraTexto,
-titulares.AbonosOrganicosProduccion,
-titulares.AbonosOrganicosCompra,
-titulares.AbonosOrganicosSubsidiado,
-titulares.AbonosQuimicosProduccion,
-titulares.AbonosQuimicosCompra,
-titulares.AbonosQuimicosSubsidiado,
-titulares.ControlPlagaNoQuimicos,
-titulares.ControlPlagaBiologicos,
-titulares.ControlPlagaOtrosMetodos,
-titulares.ControlPlagaQuimicos,
-titulares.Rotacion,
+ifnull(titulares.SemillasProduccioPropia, 0) SemillasProduccioPropia,
+ifnull(titulares.SemillasCompra, 0) SemillasCompra,
+ifnull(titulares.SemillasSubsudiado, 0) SemillasSubsudiado,
+ifnull(titulares.AnimalesMejoraIA, 0) AnimalesMejoraIA,
+ifnull(titulares.AnimalesMejoraSeleccion, 0) AnimalesMejoraSeleccion,
+ifnull(titulares.AnimalesMejoraCruzamiento, 0) AnimalesMejoraCruzamiento,
+ifnull(titulares.AnimalesMejoraOtra, 0) AnimalesMejoraOtra,
+ifnull(titulares.AnimalesMejoraTexto, '') AnimalesMejoraTexto,
+ifnull(titulares.AbonosOrganicosProduccion, 0) AbonosOrganicosProduccion,
+ifnull(titulares.AbonosOrganicosCompra, 0) AbonosOrganicosCompra,
+ifnull(titulares.AbonosOrganicosSubsidiado, 0) AbonosOrganicosSubsidiado,
+ifnull(titulares.AbonosQuimicosProduccion, 0) AbonosQuimicosProduccion,
+ifnull(titulares.AbonosQuimicosCompra, 0) AbonosQuimicosCompra,
+ifnull(titulares.AbonosQuimicosSubsidiado, 0) AbonosQuimicosSubsidiado,
+ifnull(titulares.ControlPlagaNoQuimicos, 0) ControlPlagaNoQuimicos,
+ifnull(titulares.ControlPlagaBiologicos, 0) ControlPlagaBiologicos,
+ifnull(titulares.ControlPlagaOtrosMetodos, 0) ControlPlagaOtrosMetodos,
+ifnull(titulares.ControlPlagaQuimicos, 0) ControlPlagaQuimicos,
+ifnull(titulares.Rotacion, 0) Rotacion,
 titulares.TrabPermanentesCompleta,
 titulares.TrabPermanentesParcial,
 titulares.Preparacion1S,
@@ -793,15 +810,15 @@ where p.VentanillaRegistro = ".$k1." and p.pc = ".$k2." and p.CorrelativoTitular
 
 function select_infraestructura($k1, $k2, $k3) {
 	return "SELECT
-p.InfraestructuraCodigo InfraestructuraCodigo,
-p.InfraestructuraCantidad InfraestructuraCantidad,
-p.InfraestructuraAdquisicion InfraestructuraAdquisicion,
+ifnull(p.InfraestructuraCodigo, '') InfraestructuraCodigo,
+ifnull(p.InfraestructuraCantidad, 0) InfraestructuraCantidad,
+ifnull(p.InfraestructuraAdquisicion, '0') InfraestructuraAdquisicion,
 
 ifnull(a.Codigo, ifnull(p.InfraestructuraCodigo, '')) act_cod,
 ifnull(a.Descripcion, '') act_desc,
 
-ifnull(v.Codigo, ifnull(p.InfraestructuraAdquisicion, '')) vol_cod,
-ifnull(v.Descripcion, '') col_desc
+ifnull(v.Codigo, ifnull(p.InfraestructuraAdquisicion, '')) adq_cod,
+ifnull(v.Descripcion, '') adq_desc
 
 from infraestructura p
 left join tipoinfraestructura a on p.InfraestructuraCodigo = a.Codigo
@@ -811,26 +828,4 @@ where p.VentanillaRegistro = ".$k1." and p.pc = ".$k2." and p.CorrelativoTitular
  
 }
 
-function deletes() {
-$delete_naf_completo = "
-delete FROM renaf.naf_completo_integrante;
-delete FROM renaf.integrante;
-delete FROM renaf.planilla_completa_action_alertado;
-delete FROM renaf.auditoria_planilla_completa;
-delete FROM renaf.transicionpr_planilla_completa;
-delete FROM renaf.planilla_completa;
-delete FROM renaf.naf_completo;
-";
-
-$delete_persona = "
-delete FROM renaf.auditoria_planilla_reducida;
-delete FROM renaf.planilla_reducida_action_alertado;
-delete FROM renaf.transicionfid_planilla_reducida;
-delete FROM renaf.planilla_reducida;
-delete FROM renaf.titular_completa;
-delete FROM renaf.persona;
-";
-		
-	
-}
 ?>
