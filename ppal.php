@@ -2660,19 +2660,283 @@ semillas_produccion_propia, semillas_subsidiadas) ";
 			$id_tecnologia = $Tconn->insert_id;
 			echoif(" id tecnologia :".$id_tecnologia."\n");
 		}
+		  /*************************/
+		 /* mano_de_obra_completa */
+		/*************************/
+
+		/* cantidad_trabajadores_temporarios */
+		/* Temporarios Completa */
+		$ins_sql = " insert into cantidad_trabajadores_temporarios (version, hasta_una_semana, hasta_una_quincena, hasta_un_mes, hasta_dos_meses, hasta_tres_meses, hasta_cuatro_meses, hasta_cinco_meses, hasta_seis_meses) ";
+		$ins_sql .= " values (0, ".
+			$row_tit['TrabFamEventualCompleto1S']." ,".
+			$row_tit['TrabFamEventualCompleto1Q']." ,".
+			$row_tit['TrabFamEventualCompleto1M']." ,".
+			$row_tit['TrabFamEventualCompleto2M']." ,".
+			$row_tit['TrabFamEventualCompleto3M']." ,".
+			$row_tit['TrabFamEventualCompleto4M']." ,".
+			$row_tit['TrabFamEventualCompleto5M']." ,".
+			$row_tit['TrabFamEventualCompleto6M']." )";
+		echoif("cantidad_trabajadores_temporarios TrabFamEventualCompleto\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT cantidad_trabajadores_temporarios TrabFamEventualCompleto failed: ");
+			$Errores['cantidad_trabajadores_temporarios']++;
+			echoif("\n\n");
+		} else {    
+			$id_trabtemp_completa_id  = $Tconn->insert_id;
+			echoif(" id cantidad_trabajadores_temporarios TrabFamEventualCompleto:".$id_trabtemp_completa_id."\n");
+		}
+		/*Temporarios Parcial */
+		$ins_sql = " insert into cantidad_trabajadores_temporarios (version, hasta_una_semana, hasta_una_quincena, hasta_un_mes, hasta_dos_meses, hasta_tres_meses, hasta_cuatro_meses, hasta_cinco_meses, hasta_seis_meses) ";
+		$ins_sql .= " values (0, ".
+			$row_tit['TrabFamEventualParcial1S']." ,".
+			$row_tit['TrabFamEventualParcial1Q']." ,".
+			$row_tit['TrabFamEventualParcial1M']." ,".
+			$row_tit['TrabFamEventualParcial2M']." ,".
+			$row_tit['TrabFamEventualParcial3M']." ,".
+			$row_tit['TrabFamEventualParcial4M']." ,".
+			$row_tit['TrabFamEventualParcial5M']." ,".
+			$row_tit['TrabFamEventualParcial6M']." )";
+		echoif("cantidad_trabajadores_temporarios TrabFamEventualParcial\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT cantidad_trabajadores_temporarios TrabFamEventualParcial failed: ");
+			$Errores['cantidad_trabajadores_temporarios']++;
+			echoif("\n\n");
+		} else {    
+			$id_trabtemp_parcial_id  = $Tconn->insert_id;
+			echoif(" id cantidad_trabajadores_temporarios TrabFamEventualParcial:".$id_trabtemp_parcial_id."\n");
+		}
+		/* Preparación del suelo */
+		$ins_sql = " insert into cantidad_trabajadores_temporarios (version, hasta_una_semana, hasta_una_quincena, hasta_un_mes, hasta_dos_meses, hasta_tres_meses, hasta_cuatro_meses, hasta_cinco_meses, hasta_seis_meses) ";
+		$ins_sql .= " values (0, ".
+			$row_tit['Preparacion1S']." ,".
+			$row_tit['Preparacion1Q']." ,".
+			$row_tit['Preparacion1M']." ,".
+			$row_tit['Preparacion2M']." ,".
+			$row_tit['Preparacion3M']." ,".
+			$row_tit['Preparacion4M']." ,".
+			$row_tit['Preparacion5M']." ,".
+			$row_tit['Preparacion6M']." )";
+		echoif("cantidad_trabajadores_temporarios Preparacion\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT cantidad_trabajadores_temporarios Preparacion failed: ");
+			$Errores['cantidad_trabajadores_temporarios']++;
+			echoif("\n\n");
+		} else {    
+			$id_trabtemp_preparacion_id  = $Tconn->insert_id;
+			echoif(" id cantidad_trabajadores_temporarios Preparacion:".$id_trabtemp_preparacion_id."\n");
+		}
+		/* Siembra / plantación */
+		$ins_sql = " insert into cantidad_trabajadores_temporarios (version, hasta_una_semana, hasta_una_quincena, hasta_un_mes, hasta_dos_meses, hasta_tres_meses, hasta_cuatro_meses, hasta_cinco_meses, hasta_seis_meses) ";
+		$ins_sql .= " values (0, ".
+			$row_tit['Siembra1S']." ,".
+			$row_tit['Siembra1Q']." ,".
+			$row_tit['Siembra1M']." ,".
+			$row_tit['Siembra2M']." ,".
+			$row_tit['Siembra3M']." ,".
+			$row_tit['Siembra4M']." ,".
+			$row_tit['Siembra5M']." ,".
+			$row_tit['Siembra6M']." )";
+		echoif("cantidad_trabajadores_temporarios Siembra\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT cantidad_trabajadores_temporarios Siembra failed: ");
+			$Errores['cantidad_trabajadores_temporarios']++;
+			echoif("\n\n");
+		} else {    
+			$id_trabtemp_siembra_id  = $Tconn->insert_id;
+			echoif(" id cantidad_trabajadores_temporarios Siembra:".$id_trabtemp_siembra_id."\n");
+		}
+		/* Labores culturales */
+		$ins_sql = " insert into cantidad_trabajadores_temporarios (version, hasta_una_semana, hasta_una_quincena, hasta_un_mes, hasta_dos_meses, hasta_tres_meses, hasta_cuatro_meses, hasta_cinco_meses, hasta_seis_meses) ";
+		$ins_sql .= " values (0, ".
+			$row_tit['Labores1S']." ,".
+			$row_tit['Labores1Q']." ,".
+			$row_tit['Labores1M']." ,".
+			$row_tit['Labores2M']." ,".
+			$row_tit['Labores3M']." ,".
+			$row_tit['Labores4M']." ,".
+			$row_tit['Labores5M']." ,".
+			$row_tit['Labores6M']." )";
+		echoif("cantidad_trabajadores_temporarios Labores cult\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT cantidad_trabajadores_temporarios Labores cult failed: ");
+			$Errores['cantidad_trabajadores_temporarios']++;
+			echoif("\n\n");
+		} else {    
+			$id_trabtemp_labores_id  = $Tconn->insert_id;
+			echoif(" id cantidad_trabajadores_temporarios Labores cult:".$id_trabtemp_labores_id."\n");
+		}
+		/* Cosecha */
+		$ins_sql = " insert into cantidad_trabajadores_temporarios (version, hasta_una_semana, hasta_una_quincena, hasta_un_mes, hasta_dos_meses, hasta_tres_meses, hasta_cuatro_meses, hasta_cinco_meses, hasta_seis_meses) ";
+		$ins_sql .= " values (0, ".
+			$row_tit['Cosecha1S']." ,".
+			$row_tit['Cosecha1Q']." ,".
+			$row_tit['Cosecha1M']." ,".
+			$row_tit['Cosecha2M']." ,".
+			$row_tit['Cosecha3M']." ,".
+			$row_tit['Cosecha4M']." ,".
+			$row_tit['Cosecha5M']." ,".
+			$row_tit['Cosecha6M']." )";
+		echoif("cantidad_trabajadores_temporarios Cosecha\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT cantidad_trabajadores_temporarios Cosecha failed: ");
+			$Errores['cantidad_trabajadores_temporarios']++;
+			echoif("\n\n");
+		} else {    
+			$id_trabtemp_cosecha_id  = $Tconn->insert_id;
+			echoif(" id cantidad_trabajadores_temporarios Cosecha:".$id_trabtemp_cosecha_id."\n");
+		}
+		/* Otras */ 				
+		$ins_sql = " insert into cantidad_trabajadores_temporarios (version, hasta_una_semana, hasta_una_quincena, hasta_un_mes, hasta_dos_meses, hasta_tres_meses, hasta_cuatro_meses, hasta_cinco_meses, hasta_seis_meses) ";
+		$ins_sql .= " values (0, ".
+			$row_tit['Otras1S']." ,".
+			$row_tit['Otras1Q']." ,".
+			$row_tit['Otras1M']." ,".
+			$row_tit['Otras2M']." ,".
+			$row_tit['Otras3M']." ,".
+			$row_tit['Otras4M']." ,".
+			$row_tit['Otras5M']." ,".
+			$row_tit['Otras6M']." )";
+		echoif("cantidad_trabajadores_temporarios Otras\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT cantidad_trabajadores_temporarios Otras failed: ");
+			$Errores['cantidad_trabajadores_temporarios']++;
+			echoif("\n\n");
+		} else {    
+			$id_trabtemp_otras_id  = $Tconn->insert_id;
+			echoif(" id cantidad_trabajadores_temporarios Otras:".$id_trabtemp_otras_id."\n");
+		}
+		/* mano_de_obra_completa */
+		$ins_sql = " insert into mano_de_obra_completa (version, completa_id, parcial_id, contratados_preparacion_suelo_id, contratados_siembra_id, 
+contratados_culturales_id, contratados_cosecha_id, contratados_otras_id, contratados_otra_tarea, 
+integrantes_completo, integrantes_parcial, permanentes_contratados_completo, permanentes_contratados_parcial) ";
+		$ins_sql .= " values (0, ".
+			$id_trabtemp_completa_id.", ".
+			$id_trabtemp_parcial_id.", ".
+			$id_trabtemp_preparacion_id.", ".
+			$id_trabtemp_siembra_id.", ".
+			$id_trabtemp_labores_id.", ".
+			$id_trabtemp_cosecha_id.", ".
+			$id_labores_otras_id.", '".
+			$row_tit['OtrasTexto']."' ,".
+			$row_tit['TrabFamPermanentesCompleto']." ,".
+			$row_tit['TrabFamPermanentesParcial']." ,".
+			$row_tit['TrabPermanentesCompleta']." ,".
+			$row_tit['TrabPermanentesParcial']." )";
+		echoif("mano_de_obra_completas\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT mano_de_obra_completa failed: ");
+			$Errores['mano_de_obra_completa']++;
+			echoif("\n\n");
+		} else {    
+			$id_mano_de_obra_completa = $Tconn->insert_id;
+			echoif(" id mano_de_obra_completa:".$id_mano_de_obra_completa."\n");
+		}
+
+		  /***********************/						
+		 /* contrata_maquinaria */
+		/***********************/
+		$ins_sql = " insert into contrata_maquinaria (version, contrata_maquinaria, contratados_cosecha, contratados_labores_culturales, contratados_otra_tarea 
+contratados_otras, contratados_preparacion_suelo, contratados_siembra, dias_contratados_cosecha 
+dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_preparacion_suelo, dias_contratados_siembra) ";
+		$ins_sql .= " values (0, ".
+			$row_tit['Maquinaria']."' ,".
+			$row_tit['ServCosechaPersonas']." ,".
+			$row_tit['ServCulturalesPersonas']." ,".
+			$row_tit['ServOtraTexto']." ,".
+			$row_tit['ServOtraPersonas']." ,".
+			$row_tit['ServPreparacionPersonas']." ,".
+			$row_tit['ServSiembraPersonas']." ,".
+			$row_tit['ServCosechaDias']." ,".
+			$row_tit['ServCulturalesDias']." ,".
+			$row_tit['ServOtraDias']." ,".
+			$row_tit['ServPreparacionDias']." ,".
+			$row_tit['ServSiembraDias']." )";
+		echoif("contrata_maquinaria\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT contrata_maquinaria failed: ");
+			$Errores['contrata_maquinaria']++;
+			echoif("\n\n");
+		} else {    
+			$id_contrata_maquinaria = $Tconn->insert_id;
+			echoif(" id mano_de_obra_completa:".$id_contrata_maquinaria."\n");
+		}
+
+		  /********************/						
+		 /* vivienda_detalle */
+		/********************/
+		$ins_sql = " insert into vivienda_detalle (version,
+						dormitorios,
+						las_paredes_exteriores_tienen_revoqueorevestimiento,
+						material_predomiante_de_las_paredes,
+						material_predomiante_de_los_pisos,
+						material_predomiante_del_techo,
+						otro_material_predomiante_de_las_paredes,
+						otro_material_predomiante_de_los_pisos,
+						otro_material_predomiante_del_techo,
+						otros_combustibles,
+						tiene_acceso_vehicular_transitable_todo_el_anio,
+						tiene_agua_corriente,
+						tiene_agua_corriente_dentro_de_la_casa,
+						tiene_banio_instalado,
+						tiene_cocina_instalado,
+						tiene_otro_tipo_de_desague,
+						tiene_red_cloacal,
+						tiene_red_electrica,
+						tiene_ruta_cercanaavivienda,
+						usan_gas_envasado,
+						usan_gas_natural,
+						usan_lena ) ";
+		$ins_sql .= " values (0, ".
+			$row_tit['VIVDormitorios'].", ".
+			$row_tit['SBIRevoque,'].", '".
+			$row_tit['SBIMaterialParedes']."', '".
+			$row_tit['SBIMaterialPisos']."', '".
+			$row_tit['SBIMaterialTecho']."', ".
+			"'', ".  /* FALTA! otros materiales */
+			"'', ".
+			"'', '".
+			$row_tit['SBIOtrosTexto']."' ,".
+			$row_tit['SBICaminos'].", ".
+			$row_tit['SBIAguaRed'].", ".
+			$row_tit['SBIAguaAdentro'].", ".
+			$row_tit['VIVBanio'].", ".
+			$row_tit['VIVCocina'].", ".
+			$row_tit['SBDesague'].", ".
+			$row_tit['SBCloaca'].", ".
+			$row_tit['SBILuz'].", ".
+			"0, ". /* FALTA! ruta cercana */
+			$row_tit['SBIGasEnvasado'].", ".
+			$row_tit['SBIGas'].", ".
+			$row_tit['SBILenia']." )";
+		echoif("vivienda_detalle\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT vivienda_detalle failed: ");
+			$Errores['vivienda_detalle']++;
+			echoif("\n\n");
+		} else {    
+			$id_vivienda_detalle = $Tconn->insert_id;
+			echoif(" id vivienda_detalle:".$id_vivienda_detalle."\n");
+		}
 		
-
-
-
-
-
+		
+				
 		  /**************************/						
 		 /* Actualizo naf_completo */
 		/**************************/
 		$upd_nafcompleto = " update naf_completo ";
 		$upd_nafcompleto .= " set actividad_id = ".$id_actividad_completa;
 //centros_salud_id	salud_detalle
-//contrata_maquinaria_id	contrata_maquinaria
+		$upd_nafcompleto .= " , contrata_maquinaria_id = ".$id_contrata_maquinaria;
 		$upd_nafcompleto .= " , distanciaavivienda = ".$row_tierra['DistanciaAlPredio'];
 		$upd_nafcompleto .= " , domicilio_id = ".$id_domicilio;
 		$upd_nafcompleto .= " , domicilio_produccion_id = ".$id_domicilio_prod;
@@ -2684,13 +2948,13 @@ semillas_produccion_propia, semillas_subsidiadas) ";
 		$upd_nafcompleto .= " , familia_decide_donde_se_vende = ".$row_tit['DecidenVender'];
 //guarderia_id	distancia_viviendaeducacion
 //jardin_de_infantes_id	distancia_viviendaeducacion
-//mano_de_obra_id	mano_de_obra_completa
+		$upd_nafcompleto .= " , mano_de_obra_id = ".$id_mano_de_obra_completa;
 		$upd_nafcompleto .= " , recursos_id = ".$id_recursos;
 		$upd_nafcompleto .= " , tecnologia_id	= ".$id_tecnologia;
 //tiene_croquis
 		$upd_nafcompleto .= " , tierra_id = ".$id_tierra;
 		$upd_nafcompleto .= " , unidad_distanciaavivienda = '".$row_tierra['DistanciaAlPredioUnidad']."'";
-//vivienda_detalle_id	vivienda_detalle
+		$upd_nafcompleto .= " , vivienda_detalle_id = ".$id_vivienda_detalle;
 //date_created
 //fecha_creacion
 //last_updated
