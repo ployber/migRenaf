@@ -404,7 +404,7 @@ ifnull(titulares.VIVCocina, 0) VIVCocina,
 titulares.SBCloaca,
 titulares.SBDesague,
 ifnull(titulares.SBIAguaRed, 0) SBIAguaRed,
-titulares.SBIAguaOtro,
+ifnull(titulares.SBIAguaOtro, 0) SBIAguaOtro,
 titulares.SBIAguaTipo,
 titulares.SBILuz,
 titulares.SBIGas,
@@ -412,22 +412,22 @@ titulares.SBIGasEnvasado,
 titulares.SBILenia,
 titulares.SBIOtros,
 ifnull(titulares.SBIOtrosTexto, '') SBIOtrosTexto, 
-titulares.SBIRedVial,
-titulares.SBICaminos,
-titulares.SaludCoberturaOsocial,
-titulares.SaludCoberturaPrePaga,
-titulares.SaludCoberturaEstatal,
-titulares.SaludSinCobertura,
+ifnull(titulares.SBIRedVial, 0) SBIRedVial,
+ifnull(titulares.SBICaminos, 0) SBICaminos,
+ifnull(titulares.SaludCoberturaOsocial, 0) SaludCoberturaOsocial,
+ifnull(titulares.SaludCoberturaPrePaga, 0) SaludCoberturaPrePaga,
+ifnull(titulares.SaludCoberturaEstatal, 0) SaludCoberturaEstatal,
+ifnull(titulares.SaludSinCobertura, 0) SaludSinCobertura,
 titulares.SALUDHospitalSiNo,
 titulares.SALUDHospital,
 titulares.SALUDHospitalUni,
-titulares.SALUDDispensarioSiNo,
+titulares.SALUDDispensarioSiNo
 titulares.SALUDDispensario,
 titulares.SALUDDispernsarioUni,
-titulares.SALUDClinicaOSSiNo,
+titulares.SALUDClinicaOSSiNo
 titulares.SALUDClinicaOS,
 titulares.SALUDClinicaOSUni,
-titulares.SALUDClinicaPrepSiNo,
+titulares.SALUDClinicaPrepSiNo
 titulares.SALUDClinicaPrep,
 titulares.SALUDClinicaPrepUni,
 titulares.EDUCGuarderia,
@@ -476,14 +476,14 @@ titulares.PAPescaRecoleccionTipo,
 titulares.PAPescaRecoleccionLugar,
 titulares.PAPescaCapturaTipo,
 titulares.PAPescaCapturaLugar,
-titulares.SBIperforacion,
-titulares.SBIpozo,
-titulares.SBIlluvia,
-titulares.SBIcisterna,
-titulares.SBIrio,
-titulares.SBIcanal,
-titulares.SBIarroyo,
-titulares.SBIotro,
+ifnull(titulares.SBIperforacion, 0) SBIperforacion,
+ifnull(titulares.SBIpozo, 0) SBIpozo,
+ifnull(titulares.SBIlluvia, 0) SBIlluvia,
+ifnull(titulares.SBIcisterna, 0) SBIcisterna,
+ifnull(titulares.SBIrio, 0) SBIrio,
+ifnull(titulares.SBIcanal, 0) SBIcanal,
+ifnull(titulares.SBIarroyo, 0) SBIarroyo,
+ifnull(titulares.SBIotro, 0) SBIotro,
 titulares.Telefono,
 titulares.Mail,
 titulares.ForzadoRecoleccion,
@@ -507,7 +507,10 @@ tipodoc2.descripcion tdcy_descripcion,
 ifnull(parentesco1.id, 0) parentesco1_id,
 ifnull(parentesco2.id, 0) parentesco2_id,
 ifnull(niveled1.id, 0) niveled1_id,
-ifnull(niveled2.id, 0) niveled2_id
+ifnull(niveled2.id, 0) niveled2_id,
+tipopiso.Descripcion piso_desc
+tipoparedes.Descripcion paredes_desc
+tipotecho.Descripcion techo_desc
 FROM ".SOURCEDB.".titulares titulares
 join ".SOURCEDB.".tierra h on titulares.Ventanillaregistro = h.Ventanillaregistro and titulares.pc = h.pc and titulares.Correlativo = h.Correlativo
 left join ".TARGETDB.".tipo_documento tipodoc1
@@ -522,6 +525,15 @@ left join ".TARGETDB.".nivel_educativo niveled1
 on ifnull(titulares.NivelEducativo, '0') = niveled1.codigo
 left join ".TARGETDB.".nivel_educativo niveled2
 on ifnull(titulares.CyNivelEducativo, '0') = niveled2.codigo
+
+left join ".SOURCEDB.".tipopiso tipopiso
+on ifnull(titulares.SBIMaterialPisos, '0') = tipopiso.Codigo
+left join ".SOURCEDB.".tipoparedes tipoparedes
+on ifnull(titulares.SBIMaterialParedes, '0') = tipoparedes.Codigo
+left join ".SOURCEDB.".tipotecho tipotecho
+on ifnull(titulares.SBIMaterialTecho, '0') = tipotecho.Codigo
+
+
 ";
  
 }

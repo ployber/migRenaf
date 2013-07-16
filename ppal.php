@@ -2898,9 +2898,9 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 		$ins_sql .= " values (0, ".
 			$row_tit['VIVDormitorios'].", ".
 			$row_tit['SBIRevoque,'].", '".
-			$row_tit['SBIMaterialParedes']."', '".
-			$row_tit['SBIMaterialPisos']."', '".
-			$row_tit['SBIMaterialTecho']."', ".
+			$row_tit['paredes_desc']."', '".
+			$row_tit['piso_desc']."', '".
+			$row_tit['techo_desc']."', ".
 			"'', ".  /* FALTA! otros materiales */
 			"'', ".
 			"'', '".
@@ -2913,7 +2913,7 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 			$row_tit['SBDesague'].", ".
 			$row_tit['SBCloaca'].", ".
 			$row_tit['SBILuz'].", ".
-			"0, ". /* FALTA! ruta cercana */
+			$row_tit['SBIRedVial'].", ".
 			$row_tit['SBIGasEnvasado'].", ".
 			$row_tit['SBIGas'].", ".
 			$row_tit['SBILenia']." )";
@@ -2928,6 +2928,185 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 			echoif(" id vivienda_detalle:".$id_vivienda_detalle."\n");
 		}
 		
+		/* vivienda_detalle_agua_de_otros_origenes */
+		$lista="";
+		if ($row_tit['SBIperforacion']) {
+			if (!empty($lista)) { $lista .= ", "; }
+			$lista .= "(".$id_vivienda_detalle.", 'perforacion')";
+		}
+		if ($row_tit['SBIpozo']) {
+			if (!empty($lista)) { $lista .= ", "; }
+			$lista .= "(".$id_vivienda_detalle.", 'pozo')";
+		}
+
+		if ($row_tit['SBIlluvia']) {
+			if (!empty($lista)) { $lista .= ", "; }
+			$lista .= "(".$id_vivienda_detalle.", 'lluvia')";
+		}
+
+		if ($row_tit['SBIcisterna']) {
+			if (!empty($lista)) { $lista .= ", "; }
+			$lista .= "(".$id_vivienda_detalle.", 'cisterna')";
+		}
+
+		if ($row_tit['SBIrio']) {
+			if (!empty($lista)) { $lista .= ", "; }
+			$lista .= "(".$id_vivienda_detalle.", 'rio')";
+		}
+
+		if ($row_tit['SBIcanal']) {
+			if (!empty($lista)) { $lista .= ", "; }
+			$lista .= "(".$id_vivienda_detalle.", 'canal')";
+		}
+
+		if ($row_tit['SBIarroyo']) {
+			if (!empty($lista)) { $lista .= ", "; }
+			$lista .= "(".$id_vivienda_detalle.", 'arroyo')";
+		}
+				
+		if ($row_tit['SBIotro']) {
+			if (!empty($lista)) { $lista .= ", "; }
+			$lista .= "(".$id_vivienda_detalle.", 'Otro origen (SBIotro)')";
+		}
+		if ($row_tit['SBIAguaOtro']) {
+			if (!empty($lista)) { $lista .= ", "; }
+			$lista .= "(".$id_vivienda_detalle.", 'Otro origen (SBIAguaOtro)')";
+		}
+ 		$ins_sql = " insert into vivienda_detalle_agua_de_otros_origenes (vivienda_detalle_id, agua_de_otros_origenes_string) ";
+		$ins_sql .= " values ".$lista;
+		echoif("vivienda_detalle_agua_de_otros_origenes 2\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT vivienda_detalle_agua_de_otros_origenes failed: ");
+			$Errores['vivienda_detalle_agua_de_otros_origenes']++;
+			echoif("\n\n");
+		}
+		
+		  /*****************/						
+		 /* salud_detalle */
+		/*****************/
+		/* emergencia */
+		/* centro_saludosalita */ 
+		if ($row_tit['SALUDDispensarioSiNo'] == 1)  {
+			$id_superficie = ins_superficie($Tconn, $row_tit['SALUDDispensario'], $row_tit['SALUDDispernsarioUni']);
+			$ins_sql = " insert into emergencia (version, asiste, distanciaavivienda_id) ";
+			$ins_sql .= " values (0, 1, ".$id_superficie." )";
+			echoif("emergencia centro_saludosalita\n");
+			echoif($ins_sql."\n");
+			if (!$Tconn->query($ins_sql)) {
+				pdberror($Tconn, $ins_sql."\n"."INSERT emergencia centro_saludosalita failed: ");
+				$Errores['emergencia']++;
+				echoif("\n\n");
+			} else {    
+				$id_centro_saludosalita = $Tconn->insert_id;
+				echoif(" id emergencia centro_saludosalita :".$id_centro_saludosalita."\n");
+			}
+		} else {
+			$id_centro_saludosalita = "null";			
+		}
+		/* clinicaosanatorio_prepagaoparticular */
+		if ($row_tit['SALUDClinicaPrepSiNo'] == 1) { 
+			$id_superficie = ins_superficie($Tconn, $row_tit['SALUDClinicaPrep'], $row_tit['SALUDClinicaPrepUni']);
+			$ins_sql = " insert into emergencia (version, asiste, distanciaavivienda_id) ";
+			$ins_sql .= " values (0, 1, ".$id_superficie." )";
+			echoif("emergencia clinicaosanatorio_prepagaoparticular\n");
+			echoif($ins_sql."\n");
+			if (!$Tconn->query($ins_sql)) {
+				pdberror($Tconn, $ins_sql."\n"."INSERT emergencia clinicaosanatorio_prepagaoparticular failed: ");
+				$Errores['emergencia']++;
+				echoif("\n\n");
+			} else {    
+				$id_clinicaosanatorio_prepagaoparticular = $Tconn->insert_id;
+				echoif(" id emergencia clinicaosanatorio_prepagaoparticular :".$id_clinicaosanatorio_prepagaoparticular."\n");
+			}
+		} else {
+			$id_clinicaosanatorio_prepagaoparticular = "null";			
+		}		
+		
+		/* clinicaosanatorio_obra_social */
+		if ($row_tit['SALUDClinicaOSSiNo'] == 1) { 
+			$id_superficie = ins_superficie($Tconn, $row_tit['SALUDClinicaOS'], $row_tit['SALUDClinicaOSUni']);
+			$ins_sql = " insert into emergencia (version, asiste, distanciaavivienda_id) ";
+			$ins_sql .= " values (0, 1, ".$id_superficie." )";
+			echoif("emergencia clinicaosanatorio_obra_social\n");
+			echoif($ins_sql."\n");
+			if (!$Tconn->query($ins_sql)) {
+				pdberror($Tconn, $ins_sql."\n"."INSERT emergencia clinicaosanatorio_obra_social failed: ");
+				$Errores['emergencia']++;
+				echoif("\n\n");
+			} else {    
+				$id_clinicaosanatorio_obra_social = $Tconn->insert_id;
+				echoif(" id emergencia clinicaosanatorio_obra_social :".$id_clinicaosanatorio_obra_social."\n");
+			}
+		} else {
+			$id_clinicaosanatorio_obra_social = "null";			
+		}
+		
+		/* hospital */
+		if ($row_tit['SALUDHospitalSiNo'] == 1) { 
+			$id_superficie = ins_superficie($Tconn, $row_tit['SALUDHospital'], $row_tit['SALUDHospitalUni']);
+			$ins_sql = " insert into emergencia (version, asiste, distanciaavivienda_id) ";
+			$ins_sql .= " values (0, 1, ".$id_superficie." )";
+			echoif("emergencia hospital\n");
+			echoif($ins_sql."\n");
+			if (!$Tconn->query($ins_sql)) {
+				pdberror($Tconn, $ins_sql."\n"."INSERT emergencia hospital failed: ");
+				$Errores['emergencia']++;
+				echoif("\n\n");
+			} else {    
+				$id_hospital = $Tconn->insert_id;
+				echoif(" id emergencia hospital :".$id_hospital."\n");
+			}
+		} else {
+			$id_hospital = "null";			
+		}
+		
+		$ins_sql = " insert into salud_detalle (version
+			, centro_saludosalita_id
+			, clinicaosanatorio_obra_social_id
+			, clinicaosanatorio_prepagaoparticular_id
+			, cobertura_obra_social
+			, cobertura_prepaga
+			, cobertura_publica
+			, hospital_id
+			, sin_cobertura) ";
+		$ins_sql .= " values (0, "
+			.$id_centro_saludosalita.", "
+			.$id_clinicaosanatorio_obra_social.", "
+			.$id_clinicaosanatorio_prepagaoparticular.", "
+			.$row_tit['SaludCoberturaOsocial'].", "
+			.$row_tit['SaludCoberturaPrePaga'].", "
+			.$row_tit['SaludCoberturaEstatal'].", "
+			.$id_hospital.", "
+			.$row_tit['SaludSinCobertura']." )";
+		echoif("salud_detalle\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT salud_detalle failed: ");
+			$Errores['salud_detalle']++;
+			echoif("\n\n");
+		} else {    
+			$id_salud_detalle = $Tconn->insert_id;
+			echoif(" id salud_detalle :".$id_salud_detalle."\n");
+		}
+				
+		$ins_sql = " insert into salud_detalle (version, centro_saludosalita_id, clinicaosanatorio_obra_social_id, clinicaosanatorio_prepagaoparticular_id
+		, cobertura_obra_social, cobertura_prepaga, cobertura_publica, hospital_id, sin_cobertura) ";
+		$ins_sql .= " values (0, ".$id_riego.", ".$row_tit['AguaConsumoAnimal'].", ".$row_tit['TraccionAnimal']." )";
+		echoif("salud_detalle\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT salud_detalle failed: ");
+			$Errores['salud_detalle']++;
+			echoif("\n\n");
+		} else {    
+			$id_salud_detalle = $Tconn->insert_id;
+			echoif(" id salud_detalle :".$id_salud_detalle."\n");
+		}
+		
+
+
+
 		
 				
 		  /**************************/						
@@ -2935,7 +3114,7 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 		/**************************/
 		$upd_nafcompleto = " update naf_completo ";
 		$upd_nafcompleto .= " set actividad_id = ".$id_actividad_completa;
-//centros_salud_id	salud_detalle
+		$upd_nafcompleto .= " , centros_salud_id = ".$id_salud_detalle;
 		$upd_nafcompleto .= " , contrata_maquinaria_id = ".$id_contrata_maquinaria;
 		$upd_nafcompleto .= " , distanciaavivienda = ".$row_tierra['DistanciaAlPredio'];
 		$upd_nafcompleto .= " , domicilio_id = ".$id_domicilio;
