@@ -2823,11 +2823,11 @@ integrantes_completo, integrantes_parcial, permanentes_contratados_completo, per
 			$id_trabtemp_siembra_id.", ".
 			$id_trabtemp_labores_id.", ".
 			$id_trabtemp_cosecha_id.", ".
-			$id_labores_otras_id.", '".
+			$id_trabtemp_otras_id.", '".
 			$row_tit['OtrasTexto']."' ,".
-			$row_tit['TrabFamPermanentesCompleto']." ,".
-			$row_tit['TrabFamPermanentesParcial']." ,".
-			$row_tit['TrabPermanentesCompleta']." ,".
+			$row_tit['TrabFamPermanentesCompleto'].", ".
+			$row_tit['TrabFamPermanentesParcial'].", ".
+			$row_tit['TrabPermanentesCompleta'].", ".
 			$row_tit['TrabPermanentesParcial']." )";
 		echoif("mano_de_obra_completas\n");
 		echoif($ins_sql."\n");
@@ -2843,21 +2843,21 @@ integrantes_completo, integrantes_parcial, permanentes_contratados_completo, per
 		  /***********************/						
 		 /* contrata_maquinaria */
 		/***********************/
-		$ins_sql = " insert into contrata_maquinaria (version, contrata_maquinaria, contratados_cosecha, contratados_labores_culturales, contratados_otra_tarea 
-contratados_otras, contratados_preparacion_suelo, contratados_siembra, dias_contratados_cosecha 
+		$ins_sql = " insert into contrata_maquinaria (version, contrata_maquinaria, contratados_cosecha, contratados_labores_culturales, contratados_otra_tarea, 
+contratados_otras, contratados_preparacion_suelo, contratados_siembra, dias_contratados_cosecha, 
 dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_preparacion_suelo, dias_contratados_siembra) ";
 		$ins_sql .= " values (0, ".
-			$row_tit['Maquinaria']."' ,".
-			$row_tit['ServCosechaPersonas']." ,".
-			$row_tit['ServCulturalesPersonas']." ,".
-			$row_tit['ServOtraTexto']." ,".
-			$row_tit['ServOtraPersonas']." ,".
-			$row_tit['ServPreparacionPersonas']." ,".
-			$row_tit['ServSiembraPersonas']." ,".
-			$row_tit['ServCosechaDias']." ,".
-			$row_tit['ServCulturalesDias']." ,".
-			$row_tit['ServOtraDias']." ,".
-			$row_tit['ServPreparacionDias']." ,".
+			$row_tit['Maquinaria'].", ".
+			$row_tit['ServCosechaPersonas'].", ".
+			$row_tit['ServCulturalesPersonas'].", '".
+			$row_tit['ServOtraTexto']."', ".
+			$row_tit['ServOtraPersonas'].", ".
+			$row_tit['ServPreparacionPersonas'].", ".
+			$row_tit['ServSiembraPersonas'].", ".
+			$row_tit['ServCosechaDias'].", ".
+			$row_tit['ServCulturalesDias'].", ".
+			$row_tit['ServOtraDias'].", ".
+			$row_tit['ServPreparacionDias'].", ".
 			$row_tit['ServSiembraDias']." )";
 		echoif("contrata_maquinaria\n");
 		echoif($ins_sql."\n");
@@ -2897,7 +2897,7 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 						usan_lena ) ";
 		$ins_sql .= " values (0, ".
 			$row_tit['VIVDormitorios'].", ".
-			$row_tit['SBIRevoque,'].", '".
+			$row_tit['SBIRevoque'].", '".
 			$row_tit['paredes_desc']."', '".
 			$row_tit['piso_desc']."', '".
 			$row_tit['techo_desc']."', ".
@@ -2972,14 +2972,16 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 			if (!empty($lista)) { $lista .= ", "; }
 			$lista .= "(".$id_vivienda_detalle.", 'Otro origen (SBIAguaOtro)')";
 		}
- 		$ins_sql = " insert into vivienda_detalle_agua_de_otros_origenes (vivienda_detalle_id, agua_de_otros_origenes_string) ";
-		$ins_sql .= " values ".$lista;
-		echoif("vivienda_detalle_agua_de_otros_origenes 2\n");
-		echoif($ins_sql."\n");
-		if (!$Tconn->query($ins_sql)) {
-			pdberror($Tconn, $ins_sql."\n"."INSERT vivienda_detalle_agua_de_otros_origenes failed: ");
-			$Errores['vivienda_detalle_agua_de_otros_origenes']++;
-			echoif("\n\n");
+		if (!empty($lista)) { 
+	 		$ins_sql = " insert into vivienda_detalle_agua_de_otros_origenes (vivienda_detalle_id, agua_de_otros_origenes_string) ";
+			$ins_sql .= " values ".$lista;
+			echoif("vivienda_detalle_agua_de_otros_origenes 2\n");
+			echoif($ins_sql."\n");
+			if (!$Tconn->query($ins_sql)) {
+				pdberror($Tconn, $ins_sql."\n"."INSERT vivienda_detalle_agua_de_otros_origenes failed: ");
+				$Errores['vivienda_detalle_agua_de_otros_origenes']++;
+				echoif("\n\n");
+			}
 		}
 		
 		  /*****************/						
@@ -3070,15 +3072,8 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 			, cobertura_publica
 			, hospital_id
 			, sin_cobertura) ";
-		$ins_sql .= " values (0, "
-			.$id_centro_saludosalita.", "
-			.$id_clinicaosanatorio_obra_social.", "
-			.$id_clinicaosanatorio_prepagaoparticular.", "
-			.$row_tit['SaludCoberturaOsocial'].", "
-			.$row_tit['SaludCoberturaPrePaga'].", "
-			.$row_tit['SaludCoberturaEstatal'].", "
-			.$id_hospital.", "
-			.$row_tit['SaludSinCobertura']." )";
+		$ins_sql .= " values (0, ".$id_centro_saludosalita.", ".$id_clinicaosanatorio_obra_social.", ".$id_clinicaosanatorio_prepagaoparticular.", "
+			.$row_tit['SaludCoberturaOsocial'].", ".$row_tit['SaludCoberturaPrePaga'].", ".$row_tit['SaludCoberturaEstatal'].", ".$id_hospital.", ".$row_tit['SaludSinCobertura']." )";
 		echoif("salud_detalle\n");
 		echoif($ins_sql."\n");
 		if (!$Tconn->query($ins_sql)) {
@@ -3090,24 +3085,94 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 			echoif(" id salud_detalle :".$id_salud_detalle."\n");
 		}
 				
-		$ins_sql = " insert into salud_detalle (version, centro_saludosalita_id, clinicaosanatorio_obra_social_id, clinicaosanatorio_prepagaoparticular_id
-		, cobertura_obra_social, cobertura_prepaga, cobertura_publica, hospital_id, sin_cobertura) ";
-		$ins_sql .= " values (0, ".$id_riego.", ".$row_tit['AguaConsumoAnimal'].", ".$row_tit['TraccionAnimal']." )";
-		echoif("salud_detalle\n");
+		  /********************************/						
+		 /* distancia_viviendaaeducacion */
+		/********************************/
+		/* escuelaEducacionEspecial */
+		$id_superficie = ins_superficie($Tconn, $row_tit['EDUCEducEspecial'], $row_tit['EDUCEducEspecialUni']);
+		$ins_sql = " insert into distancia_viviendaaeducacion (version, centro_educativo, distancia_id) ";
+		$ins_sql .= " values (0, 'escuelaEducacionEspecial', ".$id_superficie." )";
+		echoif("distancia_viviendaaeducacion\n");
 		echoif($ins_sql."\n");
 		if (!$Tconn->query($ins_sql)) {
-			pdberror($Tconn, $ins_sql."\n"."INSERT salud_detalle failed: ");
-			$Errores['salud_detalle']++;
+			pdberror($Tconn, $ins_sql."\n"."INSERT distancia_viviendaaeducacion failed: ");
+			$Errores['distancia_viviendaaeducacion']++;
 			echoif("\n\n");
 		} else {    
-			$id_salud_detalle = $Tconn->insert_id;
-			echoif(" id salud_detalle :".$id_salud_detalle."\n");
+			$id_escuelaEducacionEspecial = $Tconn->insert_id;
+			echoif(" id distancia_viviendaaeducacion :".$id_escuelaEducacionEspecial."\n");
 		}
-		
-
-
-
-		
+		/* escuelaPrimaria */
+		$id_superficie = ins_superficie($Tconn, $row_tit['EDUCPrimario'], $row_tit['EDUCPrimarioUni']);
+		$ins_sql = " insert into distancia_viviendaaeducacion (version, centro_educativo, distancia_id) ";
+		$ins_sql .= " values (0, 'escuelaPrimaria', ".$id_superficie." )";
+		echoif("distancia_viviendaaeducacion\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT distancia_viviendaaeducacion failed: ");
+			$Errores['distancia_viviendaaeducacion']++;
+			echoif("\n\n");
+		} else {    
+			$id_escuelaPrimaria = $Tconn->insert_id;
+			echoif(" id distancia_viviendaaeducacion :".$id_escuelaPrimaria."\n");
+		}
+		/* escuelaSecundaria */
+		$id_superficie = ins_superficie($Tconn, $row_tit['EDUCSecundario'], $row_tit['EDUCSecundarioUni']);
+		$ins_sql = " insert into distancia_viviendaaeducacion (version, centro_educativo, distancia_id) ";
+		$ins_sql .= " values (0, 'escuelaSecundaria', ".$id_superficie." )";
+		echoif("distancia_viviendaaeducacion\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT distancia_viviendaaeducacion failed: ");
+			$Errores['distancia_viviendaaeducacion']++;
+			echoif("\n\n");
+		} else {    
+			$id_escuelaSecundaria = $Tconn->insert_id;
+			echoif(" id distancia_viviendaaeducacion :".$id_escuelaSecundaria."\n");
+		}
+		/* escuelaTerciaria */
+		$id_superficie = ins_superficie($Tconn, $row_tit['EDUCTerciario'], $row_tit['EDUCTerciarioUni']);
+		$ins_sql = " insert into distancia_viviendaaeducacion (version, centro_educativo, distancia_id) ";
+		$ins_sql .= " values (0, 'escuelaTerciaria', ".$id_superficie." )";
+		echoif("distancia_viviendaaeducacion\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT distancia_viviendaaeducacion failed: ");
+			$Errores['distancia_viviendaaeducacion']++;
+			echoif("\n\n");
+		} else {    
+			$id_escuelaTerciaria = $Tconn->insert_id;
+			echoif(" id distancia_viviendaaeducacion :".$id_escuelaTerciaria."\n");
+		}
+		/* guarderia */
+		$id_superficie = ins_superficie($Tconn, $row_tit['EDUCGuarderia'], $row_tit['EDUCGuarderiaUni']);
+		$ins_sql = " insert into distancia_viviendaaeducacion (version, centro_educativo, distancia_id) ";
+		$ins_sql .= " values (0, 'guarderia', ".$id_superficie." )";
+		echoif("distancia_viviendaaeducacion\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT distancia_viviendaaeducacion failed: ");
+			$Errores['distancia_viviendaaeducacion']++;
+			echoif("\n\n");
+		} else {    
+			$id_guarderia = $Tconn->insert_id;
+			echoif(" id distancia_viviendaaeducacion :".$id_guarderia."\n");
+		}
+		/* jardinDeInfantes */
+		$id_superficie = ins_superficie($Tconn, $row_tit['EDUCJardin'], $row_tit['EDUCJardinUni']);
+		$ins_sql = " insert into distancia_viviendaaeducacion (version, centro_educativo, distancia_id) ";
+		$ins_sql .= " values (0, 'jardinDeInfantes', ".$id_superficie." )";
+		echoif("distancia_viviendaaeducacion\n");
+		echoif($ins_sql."\n");
+		if (!$Tconn->query($ins_sql)) {
+			pdberror($Tconn, $ins_sql."\n"."INSERT distancia_viviendaaeducacion failed: ");
+			$Errores['distancia_viviendaaeducacion']++;
+			echoif("\n\n");
+		} else {    
+			$id_jardinDeInfantes = $Tconn->insert_id;
+			echoif(" id distancia_viviendaaeducacion :".$id_jardinDeInfantes."\n");
+		}
+	
 				
 		  /**************************/						
 		 /* Actualizo naf_completo */
@@ -3119,17 +3184,17 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 		$upd_nafcompleto .= " , distanciaavivienda = ".$row_tierra['DistanciaAlPredio'];
 		$upd_nafcompleto .= " , domicilio_id = ".$id_domicilio;
 		$upd_nafcompleto .= " , domicilio_produccion_id = ".$id_domicilio_prod;
-//escuela_educacion_especial_id	distancia_viviendaeducacion
-//escuela_primaria_id	distancia_viviendaeducacion
-//escuela_secundaria_id	distancia_viviendaeducacion
-//escuela_terciaria_id	distancia_viviendaeducacion
+		$upd_nafcompleto .= " , escuela_educacion_especial_id = ".$id_escuelaEducacionEspecial;
+		$upd_nafcompleto .= " , escuela_primaria_id = ".$id_escuelaPrimaria;
+		$upd_nafcompleto .= " , escuela_secundaria_id = ".$id_escuelaSecundaria;
+		$upd_nafcompleto .= " , escuela_terciaria_id = ".$id_escuelaTerciaria;
 		$upd_nafcompleto .= " , familia_administra = ".$row_tit['Duenios'];
 		$upd_nafcompleto .= " , familia_decide_donde_se_vende = ".$row_tit['DecidenVender'];
-//guarderia_id	distancia_viviendaeducacion
-//jardin_de_infantes_id	distancia_viviendaeducacion
+		$upd_nafcompleto .= " , guarderia_id = ".$id_guarderia;
+		$upd_nafcompleto .= " , jardin_de_infantes_id = ".$id_jardinDeInfantes;
 		$upd_nafcompleto .= " , mano_de_obra_id = ".$id_mano_de_obra_completa;
 		$upd_nafcompleto .= " , recursos_id = ".$id_recursos;
-		$upd_nafcompleto .= " , tecnologia_id	= ".$id_tecnologia;
+		$upd_nafcompleto .= " , tecnologia_id = ".$id_tecnologia;
 //tiene_croquis
 		$upd_nafcompleto .= " , tierra_id = ".$id_tierra;
 		$upd_nafcompleto .= " , unidad_distanciaavivienda = '".$row_tierra['DistanciaAlPredioUnidad']."'";
