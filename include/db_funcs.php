@@ -401,14 +401,14 @@ ifnull(titulares.SBIMaterialTecho, '') SBIMaterialTecho,
 ifnull(titulares.VIVDormitorios, 0) VIVDormitorios,
 ifnull(titulares.VIVBanio, 0) VIVBanio,
 ifnull(titulares.VIVCocina, 0) VIVCocina,
-titulares.SBCloaca,
+ifnull(titulares.SBCloaca, 0) SBCloaca,
 ifnull(titulares.SBDesague, 0) SBDesague,
 ifnull(titulares.SBIAguaRed, 0) SBIAguaRed,
 ifnull(titulares.SBIAguaOtro, 0) SBIAguaOtro,
 titulares.SBIAguaTipo,
-titulares.SBILuz,
-titulares.SBIGas,
-titulares.SBIGasEnvasado,
+ifnull(titulares.SBILuz, 0) SBILuz,
+ifnull(titulares.SBIGas, 0) SBIGas,
+ifnull(titulares.SBIGasEnvasado, 0) SBIGasEnvasado,
 titulares.SBILenia,
 titulares.SBIOtros,
 ifnull(titulares.SBIOtrosTexto, '') SBIOtrosTexto, 
@@ -464,7 +464,7 @@ ifnull(titulares.TrabFamEventualCompleto3M, 0) TrabFamEventualCompleto3M,
 ifnull(titulares.TrabFamEventualCompleto4M, 0) TrabFamEventualCompleto4M,
 ifnull(titulares.TrabFamEventualCompleto5M, 0) TrabFamEventualCompleto5M,
 ifnull(titulares.TrabFamEventualCompleto6M, 0) TrabFamEventualCompleto6M,
-titulares.SBIAguaAdentro,
+ifnull(titulares.SBIAguaAdentro, 0) SBIAguaAdentro,
 titulares.ServComercializacionAgropecuario,
 titulares.ServTransporteAgropecuario,
 titulares.PRodRecoleccionMielCanal,
@@ -525,7 +525,6 @@ left join ".TARGETDB.".nivel_educativo niveled1
 on ifnull(titulares.NivelEducativo, '0') = niveled1.codigo
 left join ".TARGETDB.".nivel_educativo niveled2
 on ifnull(titulares.CyNivelEducativo, '0') = niveled2.codigo
-
 left join ".SOURCEDB.".tipopiso tipopiso
 on ifnull(titulares.SBIMaterialPisos, '0') = tipopiso.Codigo
 left join ".SOURCEDB.".tipoparedes tipoparedes
@@ -533,7 +532,7 @@ on ifnull(titulares.SBIMaterialParedes, '0') = tipoparedes.Codigo
 left join ".SOURCEDB.".tipotecho tipotecho
 on ifnull(titulares.SBIMaterialTecho, '0') = tipotecho.Codigo
 
-
+WHERE concat('[',titulares.Ventanillaregistro,'][',titulares.pc,'][',titulares.Correlativo,']') not in (select clave from ".SOURCEDB.".log_proceso)
 ";
  
 }

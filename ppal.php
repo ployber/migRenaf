@@ -39,63 +39,6 @@ $Errores = Array(
 	"act_pastoreo_detalle_sub_producto_animal"=>0
 );
 
-$listaTablas = Array(
-				"act_agricultura_act_agricultura_detalle",
-				"act_agricultura_detalle",   
-				"act_agroindustria_act_agroindustria_detalle",
-				"act_agroindustria_detalle",
-				"act_apicultura_act_apicultura_detalle",
-				"act_apicultura_detalle",   
-				"act_artesania_act_artesania_detalle",
-				"act_artesania_detalle",   
-				"act_caza_act_caza_detalle",
-				"act_caza_detalle",   
-				"act_pesca_act_pesca_detalle",
-				"act_pesca_detalle",   
-				"act_recoleccion_act_recoleccion_detalle",
-				"act_recoleccion_detalle",   
-				"act_turismo_rural_act_turismo_rural_detalle",
-				"act_turismo_rural_detalle",   
-				"act_pastoreo_detalle_sub_producto_animal",
-				"sub_producto_animal",   
-				"act_pastoreo_act_pastoreo_detalle",
-				"act_pastoreo_detalle",   
-				"actividad_completa_actividad_complementaria",
-				"actividad_complementaria",  
-				"actividad_completa_actividad_principal",
-				"actividad_principal",   
-				"actividad_completa_adicionales",
-				"mejora_produccion",
-				"rec_embarcaciones",
-				"rec_tractores",
-				"rec_vehiculo",
-				"recursos",
-				"rec_riego",
-				"limite_explotacion_con_limites",
-				"explotacion_con_limites",
-				"limite_explotacion_sin_limites",
-				"explotacion_sin_limites",
-				"distancia_viviendaaeducacion",
-				"salud_detalle",
-				"emergencia",
-				"superficie_completa",
-				"auditoria_planilla_reducida",
-				"planilla_reducida_action_alertado",
-				"transicionfid_planilla_reducida",
-				"planilla_reducida",
-				"naf_sector",
-				"naf_completo_integrante",
-				"integrante",
-				"planilla_completa_action_alertado",
-				"transicionpr_planilla_completa",
-				"auditoria_planilla_completa",
-				"planilla_completa",
-				"naf_completo",
-				"actividad_completa",
-				"titular",
-				"titular_completa",
-				"persona"
-				);
 
 
 $unidades_infraestructura = Array(
@@ -163,8 +106,6 @@ if (mysqli_connect_errno($Tconn)) {
 
 $Tconn->autocommit(FALSE);
 
-vaciar_tablas($Tconn, $listaTablas);
-
 $Tconn->commit();
 
 $sel_titulares = select_titulares();
@@ -177,8 +118,67 @@ if ($Sconn->errno) {
 	print_r($errors);
 } 
 $nRows_titulares = $Sconn->affected_rows;
-echoif($nRows_titulares. " filas\n\n");
+echo "Se van a procesar ".$nRows_titulares. " filas\n\n";
 if ($nRows_titulares > 0) {
+
+			
+	$ins_sql = "INSERT INTO organizacion (version, cbu, cantidad_asociados, comentarios, cuit, departamento_id, descripcion, direccion, email, fecha_convenio, municipio_distrito_comuna_id, nombre_contacto, nro_convenio, nro_registro, personeria_juridica, provincia_id, siglas, telefono, tipo_organizacion_id)"; 
+	$ins_sql .= " VALUES (0, NULL, NULL, NULL, NULL, 2001, 'Migracion ReNAF', 'Paseo Colon 922', 'renaf@minagri.gob.ar', NULL, 229, NULL, NULL, NULL, NULL, 1, 'UCRAF', '4349-2632', 1)";
+	echoif("organizacion \n");
+	echoif($ins_sql."\n");
+	if (!$Tconn->query($ins_sql)) {
+		pdberror($Tconn, $ins_sql."\n"."INSERT organizacion failed: ");echoif("\n\n");
+	} else {
+		$id_organizacion = $Tconn->insert_id;
+		echoif(" id organizacion:".$id_organizacion."\n");
+	}
+	$ins_sql = "INSERT INTO responsable (version, comentarios, dni, domicilio, email, funcion, localidad, nombre, organizacion_id, telefono, zona) "; 
+	$ins_sql .= " VALUES (0, NULL, '33222111', NULL, 'renafmendoza@yahoo.com.ar', 'ReNAF Migracion', NULL, 'Juan Cito', ".$id_organizacion.", NULL, NULL)";
+	echoif("responsable \n");
+	echoif($ins_sql."\n");
+	if (!$Tconn->query($ins_sql)) {
+		pdberror($Tconn, $ins_sql."\n"."INSERT responsable failed: ");echoif("\n\n");
+	} else {
+		$id_responsable = $Tconn->insert_id;
+		echoif(" id responsable:".$id_responsable."\n");
+	}
+	$ins_sql = "INSERT INTO nodo (version, departamento_id, email, municipio_distrito_comuna_id, nombre, organizacion_id, provincia_id, responsable_id) "; 
+	$ins_sql .= " VALUES (0, 2001, 'migracion@fenar.gov.ar', 229, 'NodoCABA', ".$id_organizacion.", 1, ".$id_responsable.")";
+	echoif("nodo \n");
+	echoif($ins_sql."\n");
+	if (!$Tconn->query($ins_sql)) {
+		pdberror($Tconn, $ins_sql."\n"."INSERT nodo failed: ");echoif("\n\n");
+	} else {
+		$id_nodo = $Tconn->insert_id;
+		echoif(" id nodo:".$id_nodo."\n");
+	}
+	$ins_sql = " INSERT INTO ventanilla (version, cbu, departamento_id, email, fecha_convenio, municipio_distrito_comuna_id, nodo_id, nombre, nro_convenio, organizacion_id, provincia_id, responsable_id) "; 
+	$ins_sql .= " VALUES (0, NULL, 2001, 'renaf@minagri.gob.ar', NULL, 229, ".$id_nodo.", 'Vt_migracion_CABA', NULL, ".$id_organizacion.", 1, ".$id_responsable.")";
+	echoif("ventanilla \n");
+	echoif($ins_sql."\n");
+	if (!$Tconn->query($ins_sql)) {
+		pdberror($Tconn, $ins_sql."\n"."INSERT ventanilla failed: ");echoif("\n\n");
+	} else {
+		$id_ventanilla = $Tconn->insert_id;
+		echoif(" id ventanilla:".$id_ventanilla."\n");
+	}
+		
+	$ins_sql = " INSERT INTO registrador (version, comentarios, credencial_entregada, documento, domicilio, email, fecha_ingreso, fecha_inhabilitacion
+	, funcion, localidad, nombre, organizacion_id, postulado_por_organizacion_gubernamental, postulado_por_organizacion_no_gubernamental, telefono
+	, tipo_documento_id, ventanilla_id, zona) "; 
+	$ins_sql .= "VALUES (0, NULL, b'1', '12345678', 'CABA', 'renaf@minagri.gob.ar', '2013-07-16 00:00:00', NULL, 'Registrador', NULL
+	, 'Juan Cito Proc Migrador', ".$id_organizacion.", b'0', b'1', NULL, 1, ".$id_ventanilla.", NULL) "; 
+	echoif("registrador \n");
+	echoif($ins_sql."\n");
+	if (!$Tconn->query($ins_sql)) {
+		pdberror($Tconn, $ins_sql."\n"."INSERT registrador failed: ");echoif("\n\n");
+	} else {
+		$id_registrador = $Tconn->insert_id;
+		echoif(" id registrador:".$id_registrador."\n");
+	}
+	$Tconn->commit();		
+	
+	
 	$i=0;
 	while ($row_tit = mysqli_fetch_array($res_titulares)) {
 		//print_r($row_tit);
@@ -187,7 +187,9 @@ if ($nRows_titulares > 0) {
 		$k1 = $row_tit['Ventanillaregistro']; 
 		$k2 = $row_tit['pc']; 
 		$k3 = $row_tit['Correlativo'];
-		
+		$nroFormulario = str_replace('.', '', $row_tit['formulario']);
+		$nroFormulario = str_replace(',', '', $nroFormulario);
+				
 		if ($i > $TOPEFILASAPROCESAR) {
 			//$result->close();
 			break;
@@ -197,29 +199,31 @@ if ($nRows_titulares > 0) {
 				continue;
 			}
 		}
-		echoif("row ".$i." Key:[".$k1."-".$k2."-".$k3."]");
+		echoif("row ".$i);
 		echoif(" Titular :[".$row_tit['TipoDocumento']."][".$row_tit['NumeroDocumento']."]");
 		echoif(" Conyuge :[".$row_tit['CyTipoDocumento']."][".$row_tit['CyNumeroDocumento']."]\n");
 		$n_TipoDocumento = intval($row_tit['TipoDocumento']);
 		$n_NumeroDocumento = floatval($row_tit['NumeroDocumento']);
 		$n_CyTipoDocumento = intval($row_tit['CyTipoDocumento']);
 		$n_CyNumeroDocumento = floatval($row_tit['CyNumeroDocumento']);
-		
+		$n_NumeroFormulario = floatval($nroFormulario);
+				
 		
 		if (($i % 100) == 0 ) {
-			echo "row ".$i." Key:[".$k1."-".$k2."-".$k3."]\n";
+			echo "rows ".$i."\n";
 		}
 
 		if ($row_tit['NumeroDocumento'] == "") {
 			//salto a la fila siguiente
-			echoif(" sin datos del titular, ignoro registro.\n\n");
+			echoif(".\n\n");
 			echoif("\n\n\n");
+			log_proceso($Sconn, $k1, $k2, $k3, $n_NumeroFormulario, "NO", " sin datos del titular, ignoro registro");
 			continue;
 		}
 		if ($n_NumeroDocumento < 10000) {
 			//salto a la fila siguiente
-			echoif(" Titular con nro documento invalido: ".$n_NumeroDocumento.", ignoro registro.\n\n");
 			echoif("\n\n\n");
+			log_proceso($Sconn, $k1, $k2, $k3, $n_NumeroFormulario, "NO",  "Titular con nro documento invalido: ".$n_NumeroDocumento.", ignoro registro.");
 			continue;
 		}
 				
@@ -228,7 +232,22 @@ if ($nRows_titulares > 0) {
 		$id_tit_completa_tit = -1;
 		$id_tit_completa_cy = -1;
 		
-		
+		$sql = "select * from ".SOURCEDB.".log_proceso ";
+		$sql .= "WHERE clave = '"."[".$k1."][".$k2."][".$k3."]'";
+		$res_procesado = $Sconn->query($sql);
+		$nRows_procesado = $Sconn->affected_rows;
+		if ($nRows_procesado > 0) {
+			log_proceso($Sconn, $k1, $k2, $k3, $n_NumeroFormulario, "NO", " Registro ya procesado");
+			continue;
+		}
+		$sql = "select * from ".SOURCEDB.".log_proceso ";
+		$sql .= "WHERE formulario = ".$n_NumeroFormulario;
+		$res_procesado = $Sconn->query($sql);
+		$nRows_procesado = $Sconn->affected_rows;
+		if ($nRows_procesado > 0) {
+			log_proceso($Sconn, $k1, $k2, $k3, $n_NumeroFormulario, "NO", " Nro de formulario ya procesado");
+			continue;
+		}
 		/* Si cualquiera de los dos ya existe en la tabla personas NO proceso el registro */
 		/* existe titular */
 		$existe_titular=0;
@@ -239,7 +258,6 @@ if ($nRows_titulares > 0) {
 		$sql .= " WHERE t.NumeroDocumento = '".$row_tit['NumeroDocumento']."'";
 		$sql .= " AND t.TipoDocumento = '".$row_tit['TipoDocumento']."'";
 		$res_existe_titular = $Sconn->query($sql);
-		echoif($sql."\n");
 		if ($Sconn->errno) {
 			$errors[] = $Sconn->error;
 		    printf("error : %s\n", $Sconn->errno);
@@ -264,7 +282,6 @@ if ($nRows_titulares > 0) {
 		$sql .= " WHERE t.CyNumeroDocumento = '".$row_tit['CyNumeroDocumento']."'";
 		$sql .= " AND t.CyTipoDocumento = '".$row_tit['CyTipoDocumento']."'";
 		$res_existe_conyuge = $Sconn->query($sql);
-		echoif($sql."\n");
 		if ($Sconn->errno) {
 			$errors[] = $Sconn->error;
 		    printf("error : %s\n", $Sconn->errno);
@@ -283,29 +300,17 @@ if ($nRows_titulares > 0) {
 
 		if ($existe_titular || $existe_conyuge) {
 			//salto a la fila siguiente
+			
 			if ($existe_titular) {
-				echoif("Ya existe el titular en la tabla de personas ".$row_tit['TipoDocumento']."-".$row_tit['NumeroDocumento']);
+				$str = "Ya existe el titular en la tabla de personas ".$row_tit['TipoDocumento']."-".$row_tit['NumeroDocumento'];
 			}
 			if ($existe_conyuge) {
-				echoif("Ya existe el conyuge en la tabla de personas ".$row_tit['CyTipoDocumento']."-".$row_tit['CyNumeroDocumento']);
+				$str = "Ya existe el conyuge en la tabla de personas ".$row_tit['CyTipoDocumento']."-".$row_tit['CyNumeroDocumento'];
 			}
-			echoif("\nignoro registro.\n\n");
 			echoif("\n\n\n");
+			log_proceso($Sconn, $k1, $k2, $k3, $n_NumeroFormulario, "NO",  $str." ignoro registro.");
 			continue;
 		}
-
-/*
-		echo "Titular :[".$row_tit['TipoDocumento']."][".$row_tit['NumeroDocumento']."]\n";
-		echo "Titular :[".$n_TipoDocumento."][".$n_NumeroDocumento."]\n";
-		echo "Conyuge :[".$row_tit['CyTipoDocumento']."][".$row_tit['CyNumeroDocumento']."]\n";
-		echo "Conyuge :[".$n_CyTipoDocumento."][".$n_CyNumeroDocumento."]\n";
-
-		if ($row_tit['CyNumeroDocumento'] != "" && $row_tit['CyNumeroDocumento'] != "0") {
-			$SINCONYUGE=0;
-		} else {
-			$SINCONYUGE=1;
-		}
-*/
 
 		if ($n_CyNumeroDocumento > 0) {
 			$SINCONYUGE=0;
@@ -320,6 +325,24 @@ if ($nRows_titulares > 0) {
 		if ($n_CyTipoDocumento < 10000) {
 			$SINCONYUGE=1;
 		}
+
+		/* verifico si ya existe nro formulario */
+		$existe_formulario=0;
+		$sql  = " SELECT * FROM ".TARGETDB.".planilla_completa t ";
+		$sql .= " WHERE t.numero = ".$n_NumeroFormulario;
+		$res_existe_formulario = $Tconn->query($sql);
+		if ($Tconn->errno) {
+			$errors[] = $Tconn->error;
+		    printf("error : %s\n", $Tconn->errno);
+			echo $sql."\n";
+			print_r($errors);
+		} else { 
+			$nRows_existe_formulario = $Tconn->affected_rows;
+			if ($nRows_existe_formulario > 0) {
+				$existe_formulario = 1;
+			}
+		}
+		//echo "formulario: [".$row_tit['formulario']."][".$n_NumeroFormulario."][".$existe_formulario."][".$nRows_existe_formulario."]";
 
 		$sel_tierra = select_tierra($k1, $k2, $k3);
 		$res_tierra = $Sconn->query($sel_tierra);
@@ -337,7 +360,7 @@ if ($nRows_titulares > 0) {
 		} else {
 			$row_tierra = array();
 		}
-		echoif("Obtenido registro tierra ".$nRows_tierra."\n\n");
+		echoif($nRows_tierra." registro tierra ");
 				
 		$sel_pv = select_prodvegetal($k1, $k2, $k3); 
 		$res_pv = $Sconn->query($sel_pv);
@@ -349,7 +372,7 @@ if ($nRows_titulares > 0) {
 			print_r($errors);
 		} else { 
 			$nRows_pv = $Sconn->affected_rows;
-			echoif("Obtenidos registros prodvegetal ".$nRows_pv."\n");
+			echoif($nRows_pv." registros prodvegetal ");
 		}
 
 		$sel_pa = select_prodanimal($k1, $k2, $k3);
@@ -362,7 +385,7 @@ if ($nRows_titulares > 0) {
 		    print_r($errors);
 		} else { 
 			$nRows_pa = $Sconn->affected_rows;
-			echoif("Obtenidos registros prodanimal ".$nRows_pa."\n");
+			echoif($nRows_pa." registros prodanimal");
 		}
 
 		$sel_ar = select_artesanias($k1, $k2, $k3);
@@ -375,7 +398,7 @@ if ($nRows_titulares > 0) {
 			print_r($errors);
 		} else { 
 			$nRows_ar = $Sconn->affected_rows;
-			echoif("Obtenidos registros artesanias ".$nRows_ar."\n");
+			echoif($nRows_ar." registros artesanias");
 		}
 
 		$sel_in = select_infraestructura($k1, $k2, $k3);
@@ -388,7 +411,7 @@ if ($nRows_titulares > 0) {
 			print_r($errors);
 		} else { 
 			$nRows_in = $Sconn->affected_rows;
-			echoif("Obtenidos registros infraestructura ".$nRows_in."\n");
+			echoif($nRows_in." registros infraestructura");
 		}
 			
 		$sel_ai = select_agroindustria($k1, $k2, $k3); 
@@ -401,7 +424,7 @@ if ($nRows_titulares > 0) {
 			print_r($errors);
 		} else { 
 			$nRows_ai = $Sconn->affected_rows;
-			echoif("Obtenidos registros agroindustria ".$nRows_ai."\n\n");
+			echoif($nRows_ai." registros agroindustria\n");
 		}
 
 		/*
@@ -414,11 +437,6 @@ if ($nRows_titulares > 0) {
 		/* INSERT persona */
 		echoif("titular\n");
 		echoif(" tit_IdDocumento[".$row_tit['tdtit_id']."] tit_TipoDocumento[".$row_tit['TipoDocumento']."] tit_NumeroDocumento[".$row_tit['NumeroDocumento']."] tit_Nombres[".$row_tit['Nombres']."] tit_Apellido[".$row_tit['Apellido']."]\n");
-		echoif(" Nivel educativo [".$row_tit['NivelEducativo']."]\n");
-		echoif(" Nivel educativo Cy [".$row_tit['CyNivelEducativo']."]\n");
-		echoif(" parentesco [".$row_tit['parentesco']."]\n");
-		echoif(" Cyparentesco [".$row_tit['Cyparentesco']."]\n");
-		
 		$apellido = mysqli_real_escape_string($Tconn, $row_tit['Apellido']);
 		$nombres = mysqli_real_escape_string($Tconn, $row_tit['Nombres']);
 		$ins_titular = " INSERT INTO persona (version, apellido, documento, fecha_nacimiento, nacionalidad, nombre, sexo, tipo_documento_id) ";
@@ -2612,7 +2630,12 @@ if ($nRows_titulares > 0) {
 							$propia = 0;
 							$subsidio = 0;
 			        		break;
+					    case '':
+							$propia = 0;
+							$subsidio = 0;
+			        		break;
 					}
+
 					$id_superficie = ins_superficie($Tconn, $row_in['InfraestructuraCantidad'], $unidades_infraestructura[$row_in['InfraestructuraCodigo']]);
 					$ins_mejora_produccion = " insert into mejora_produccion (version, adquisicion_propia, adquisicion_subsidiado, cantidad_id, codigo, descripcion, recursos_id )"; 
 					$ins_mejora_produccion .= " values (0, ".$propia.", ".$subsidio.", ".$id_superficie.", '".$row_in['act_cod']."', '".$row_in['act_desc']."', ".$id_recursos." )";
@@ -2627,12 +2650,12 @@ if ($nRows_titulares > 0) {
 		  /**************/
 		 /* tecnologia */
 		/**************/
-		$ins_tecnologia = " insert into tecnologia (version, abonos_organicos_comprados, abonos_organicos_produccion_propia, 
-abonos_organicos_subsidiados, abonos_quimicos_comprados, abonos_quimicos_subsidiados, control_plagas_no_quimicos, 
-control_plagas_no_quimicos_biologicos, control_plagas_no_quimicos_otros, control_plagas_quimicos, 
-mejoras_geneticas_cruzamiento, mejoras_geneticas_inseminacion_artificial, mejoras_geneticas_otras, 
-mejoras_geneticas_seleccion, rotacion_cultivos, semillas_compradas, 
-semillas_produccion_propia, semillas_subsidiadas) ";
+		$ins_tecnologia = " insert into tecnologia (version, abonos_organicos_comprados, abonos_organicos_produccion_propia, "; 
+		$ins_tecnologia .= " abonos_organicos_subsidiados, abonos_quimicos_comprados, abonos_quimicos_subsidiados, control_plagas_no_quimicos, "; 
+		$ins_tecnologia .= " control_plagas_no_quimicos_biologicos, control_plagas_no_quimicos_otros, control_plagas_quimicos, ";
+		$ins_tecnologia .= " mejoras_geneticas_cruzamiento, mejoras_geneticas_inseminacion_artificial, mejoras_geneticas_otras, ";
+		$ins_tecnologia .= " mejoras_geneticas_seleccion, rotacion_cultivos, semillas_compradas, ";
+		$ins_tecnologia .= " semillas_produccion_propia, semillas_subsidiadas) ";
 		$ins_tecnologia .= " values (0, ".$row_tit['AbonosOrganicosCompra']." , ".
 			$row_tit['AbonosOrganicosProduccion']." , ".
 			$row_tit['AbonosOrganicosSubsidiado']." , ".
@@ -2813,9 +2836,9 @@ semillas_produccion_propia, semillas_subsidiadas) ";
 			echoif(" id cantidad_trabajadores_temporarios Otras:".$id_trabtemp_otras_id."\n");
 		}
 		/* mano_de_obra_completa */
-		$ins_sql = " insert into mano_de_obra_completa (version, completa_id, parcial_id, contratados_preparacion_suelo_id, contratados_siembra_id, 
-contratados_culturales_id, contratados_cosecha_id, contratados_otras_id, contratados_otra_tarea, 
-integrantes_completo, integrantes_parcial, permanentes_contratados_completo, permanentes_contratados_parcial) ";
+		$ins_sql = " insert into mano_de_obra_completa (version, completa_id, parcial_id, contratados_preparacion_suelo_id, contratados_siembra_id,"; 
+		$ins_sql .= " contratados_culturales_id, contratados_cosecha_id, contratados_otras_id, contratados_otra_tarea,"; 
+		$ins_sql .= " integrantes_completo, integrantes_parcial, permanentes_contratados_completo, permanentes_contratados_parcial) ";
 		$ins_sql .= " values (0, ".
 			$id_trabtemp_completa_id.", ".
 			$id_trabtemp_parcial_id.", ".
@@ -2843,9 +2866,9 @@ integrantes_completo, integrantes_parcial, permanentes_contratados_completo, per
 		  /***********************/						
 		 /* contrata_maquinaria */
 		/***********************/
-		$ins_sql = " insert into contrata_maquinaria (version, contrata_maquinaria, contratados_cosecha, contratados_labores_culturales, contratados_otra_tarea, 
-contratados_otras, contratados_preparacion_suelo, contratados_siembra, dias_contratados_cosecha, 
-dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_preparacion_suelo, dias_contratados_siembra) ";
+		$ins_sql = " insert into contrata_maquinaria (version, contrata_maquinaria, contratados_cosecha, contratados_labores_culturales, contratados_otra_tarea, "; 
+		$ins_sql .= " contratados_otras, contratados_preparacion_suelo, contratados_siembra, dias_contratados_cosecha, ";
+		$ins_sql .= " dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_preparacion_suelo, dias_contratados_siembra) ";
 		$ins_sql .= " values (0, ".
 			$row_tit['Maquinaria'].", ".
 			$row_tit['ServCosechaPersonas'].", ".
@@ -2873,28 +2896,11 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 		  /********************/						
 		 /* vivienda_detalle */
 		/********************/
-		$ins_sql = " insert into vivienda_detalle (version,
-						dormitorios,
-						las_paredes_exteriores_tienen_revoqueorevestimiento,
-						material_predomiante_de_las_paredes,
-						material_predomiante_de_los_pisos,
-						material_predomiante_del_techo,
-						otro_material_predomiante_de_las_paredes,
-						otro_material_predomiante_de_los_pisos,
-						otro_material_predomiante_del_techo,
-						otros_combustibles,
-						tiene_acceso_vehicular_transitable_todo_el_anio,
-						tiene_agua_corriente,
-						tiene_agua_corriente_dentro_de_la_casa,
-						tiene_banio_instalado,
-						tiene_cocina_instalado,
-						tiene_otro_tipo_de_desague,
-						tiene_red_cloacal,
-						tiene_red_electrica,
-						tiene_ruta_cercanaavivienda,
-						usan_gas_envasado,
-						usan_gas_natural,
-						usan_lena ) ";
+		$ins_sql = " insert into vivienda_detalle (version, dormitorios, las_paredes_exteriores_tienen_revoqueorevestimiento, material_predomiante_de_las_paredes, ";
+		$ins_sql .= " material_predomiante_de_los_pisos, material_predomiante_del_techo, otro_material_predomiante_de_las_paredes, otro_material_predomiante_de_los_pisos, ";
+		$ins_sql .= " otro_material_predomiante_del_techo, otros_combustibles, tiene_acceso_vehicular_transitable_todo_el_anio, tiene_agua_corriente, ";
+		$ins_sql .= " tiene_agua_corriente_dentro_de_la_casa, tiene_banio_instalado, tiene_cocina_instalado, tiene_otro_tipo_de_desague, ";
+		$ins_sql .= " tiene_red_cloacal, tiene_red_electrica, tiene_ruta_cercanaavivienda, usan_gas_envasado, usan_gas_natural, usan_lena ) ";
 		$ins_sql .= " values (0, ".
 			$row_tit['VIVDormitorios'].", ".
 			$row_tit['SBIRevoque'].", '".
@@ -3063,15 +3069,8 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 			$id_hospital = "null";			
 		}
 		
-		$ins_sql = " insert into salud_detalle (version
-			, centro_saludosalita_id
-			, clinicaosanatorio_obra_social_id
-			, clinicaosanatorio_prepagaoparticular_id
-			, cobertura_obra_social
-			, cobertura_prepaga
-			, cobertura_publica
-			, hospital_id
-			, sin_cobertura) ";
+		$ins_sql = " insert into salud_detalle (version, centro_saludosalita_id, clinicaosanatorio_obra_social_id, clinicaosanatorio_prepagaoparticular_id";
+		$ins_sql .= ", cobertura_obra_social, cobertura_prepaga, cobertura_publica, hospital_id, sin_cobertura) ";
 		$ins_sql .= " values (0, ".$id_centro_saludosalita.", ".$id_clinicaosanatorio_obra_social.", ".$id_clinicaosanatorio_prepagaoparticular.", "
 			.$row_tit['SaludCoberturaOsocial'].", ".$row_tit['SaludCoberturaPrePaga'].", ".$row_tit['SaludCoberturaEstatal'].", ".$id_hospital.", ".$row_tit['SaludSinCobertura']." )";
 		echoif("salud_detalle\n");
@@ -3195,15 +3194,15 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 		$upd_nafcompleto .= " , mano_de_obra_id = ".$id_mano_de_obra_completa;
 		$upd_nafcompleto .= " , recursos_id = ".$id_recursos;
 		$upd_nafcompleto .= " , tecnologia_id = ".$id_tecnologia;
-//tiene_croquis
+		$upd_nafcompleto .= " , tiene_croquis = 0";
 		$upd_nafcompleto .= " , tierra_id = ".$id_tierra;
 		$upd_nafcompleto .= " , unidad_distanciaavivienda = '".$row_tierra['DistanciaAlPredioUnidad']."'";
 		$upd_nafcompleto .= " , vivienda_detalle_id = ".$id_vivienda_detalle;
-//date_created
-//fecha_creacion
-//last_updated
-//observaciones
-//telefono_contacto
+		$upd_nafcompleto .= " , date_created = now() ";
+		$upd_nafcompleto .= " , fecha_creacion = '".$row_tit['fechaCarga']."'";
+		$upd_nafcompleto .= " , last_updated = now() ";
+		$upd_nafcompleto .= " , observaciones = '[".sprintf("%.10s", $k1)."][".sprintf("%.4s", $k2)."][".sprintf("%.4s", $k3)."] ".mysqli_real_escape_string($Tconn, $row_tit['Observaciones'])."'";
+		$upd_nafcompleto .= " , telefono_contacto = '".$row_tit['Telefono']."'";
 		$upd_nafcompleto .= " where id = ".$id_naf_completo;
 		
 		if (!$Tconn->query($upd_nafcompleto)) {
@@ -3212,14 +3211,33 @@ dias_contratados_labores_culturales, dias_contratados_otras, dias_contratados_pr
 			echoif("\n\n");
 		}		
 
+		if (is_numeric($row_tit['formulario']) || !$existe_formulario) {
+			$ins_sql = " insert into planilla_completa (version, estado, naf_id, nodo_id, numero, registrador_id, ventanilla_id, date_created, fecha_creacion, last_updated) ";
+			$ins_sql .= " values (0, 'aCorregir', ".$id_naf_completo.", ".$id_nodo.", ".$n_NumeroFormulario.", ".$id_registrador.", ".$id_ventanilla.", now(), '".$row_tit['fechaCarga']."', now())";
+			echoif("planilla_completa\n");
+			echoif($ins_sql."\n");
+			if (!$Tconn->query($ins_sql)) {
+				pdberror($Tconn, $ins_sql."\n"."INSERT planilla_completa failed: ");
+				$Errores['planilla_completa']++;
+				echoif("\n\n");
+			}
+		}
+
+		log_proceso($Sconn, $k1, $k2, $k3, $n_NumeroFormulario, "OK",  "Procesado Ok");
+		
 		$Tconn->commit();
 		echoif("\n\n\n");
-
 	}
 }
 echo "FIN!\n";
 print_r($Errores);
-
+/*******************************/
+/*******************************/
+/*******************************/
+/*  F I N    */
+/*******************************/
+/*******************************/
+/*******************************/
 function ins_superficie ($conn, $medida, $unidad_id) {
 	$id_superficie_completa = -1;
 	$ins_superficie_completa = " insert into superficie_completa (version, medida, unidad_id) ";
@@ -3239,23 +3257,6 @@ function ins_superficie ($conn, $medida, $unidad_id) {
 function unidad_infraestructura($codigo) {
 	
 	return $unidad;
-}
-function vaciar_tablas($conn, $listaTablas) {
-	$conn->query("SET foreign_key_checks = 0;");
-	echoif("borrando tablas...\n");
-	foreach ($listaTablas as $tabla) {
-		$del_query = "delete FROM ".$tabla.";"; 
-		echoif($del_query." ");
-		if (!$conn->query($del_query)) {
-			pdberror($conn, $del_query." failed: ");
-			echoif("\n\n");
-		} else {
-			echoif("Se borro ok ".$tabla."\n");
-		}
-	}
-	$conn->query("SET foreign_key_checks = 1;");
-	echoif("Listo borrar tablas\n\n");
-	return;
 }
 
 function ins_familiares($Sconn, $Tconn, $id_naf_completo, $k1, $k2, $k3) {
@@ -3445,5 +3446,21 @@ function ins_prevencion ($conn, $id_tierra, $adoptado, $cod, $descripcion ){
 		pdberror($conn, $ins_tierra_prevencion."\n"."INSERT tierra_prevencion failed: ");$Errores['tierra_prevencion']++;echoif("\n\n");
 	}
 	
+}
+function log_proceso($conn, $k1, $k2, $k3, $nroform, $estado, $obs) {
+	$res = 0;
+	if (!is_numeric($nroform)) {
+		$obs = trim($obs). "nro: [".$nroform."]";
+		$nroform = 0;
+	}
+	
+	$ins_sql = " insert into log_proceso (clave, formulario, estado, obs )";
+	$ins_sql .= " values ('[".$k1."][".$k2."][".$k3."]', cast('".$nroform."' as decimal), '".$estado."', '".$obs."' )";
+	echoif($obs."\n\n");
+	if (!$conn->query($ins_sql)) {
+		pdberror($conn, $ins_sql."\n"."INSERT log_proceso failed: ");
+		$res = 1;
+	}
+	return $res;
 }
 ?>
